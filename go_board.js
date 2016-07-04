@@ -90,10 +90,35 @@ function GoBoard(size) {
 		return output;
 	};
 
+	this.matchNeigh = function (i,j,color) {
+		var n = this.neigh(i,j);
+		return n.filter(function(x) {return x[2] === color; });
+	}
+	this.emptyNeigh = function(i,j) {
+		return this.matchNeigh(i,j,0);
+	}
+	this.friendNeigh = function(i, j) {
+		return this.matchNeigh(i,j, this.get(i,j));
+	}
+	this.enemyNeigh = function(i,j) {
+		return this.matchNeigh(i,j, this.get(i,j) == 1 ? 2 : 1);
+	}
+
 	this.moveValid = function(i,j, color) {
 		if (i < 0 || i >= this.size) { return false; }
 		if (j < 0 || j >= this.size) { return false; }
-		return this.get(i,j) === 0;
+		if (this.get(i,j) !== 0) { return false; }
+		if (this.emptyNeigh(i,j).length > 0) { return true; }
+		var n = this.matchNeigh(i,j,color);
+		for (var k = 0; k < n.length; k++) {
+			if (this.groupLib(n[0],n[1]).length > 1) { return true; }
+		}
+		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
+		for (k = 0; k < n.length; k++) {
+			if (this.groupLib(n[0],n[1]).length == 1) { return true; }
+
+		}
+		return false;
 	};
 
 	this.add = function(i,j, color) {
@@ -142,7 +167,7 @@ function GoBoard(size) {
 			for (var j = 0; j < this.size; j++) {
 				if (this.get(i,j) !== 0) {
 
-					n = this.neigh(i,j).filter(function(x) {return x[2] === 0; });
+					n = this.emptyNeigh(i,j);
 					output[i][j] = output[i][j].concat(n.map(function(x) { return [x[0],x[1]]; }));
 				}
 			}
@@ -186,7 +211,7 @@ function GoBoard(size) {
 						current = stack[stack.length -1];
 						stack.pop();
 						output[current[0]][current[1]] = g_id;
-						n = this.neigh(current[0],current[1]).filter(function(x) {return x[2] == board.get(current[0],current[1]); });
+						n = this.friendNeigh(current[0],current[1]);
 						for (var k = 0; k < n.length; k++) {
 							if (this.get(n[k][0],n[k][1]) !== 0 && output[n[k][0]][n[k][1]] == -1) {
 								stack.push(n[k]);
@@ -203,6 +228,7 @@ function GoBoard(size) {
 	};
 
 	this.comb_map = function() {
+		var board = this;
 		if (this.c_cache) { return this.c_cache; }
 		var libs = this.lib_map();
 		var grps = this.group_map();
@@ -213,14 +239,32 @@ function GoBoard(size) {
 		});
 		output = assocFoldr(output, function(a,b) {
 			return a.concat(b);
+		}).filter(function(x) {
+			return x.grp != -1;
 		});
 
+		output.map(function (x) { x.libs.sort(board.pointOrder);});
+		output = classifyr(output, function(x){
+			return x.grp;
+		}).map(function (x) {
+			return assocFoldr(x, function(a,b) {
+				return {"grp": a.grp, "libs": uniqueMerge(a.libs, b.libs, board.pointOrder)};
+			});
+		});
 		this.c_cache = output;
 		return output;
 	};
 
 	this.groupLib = function(i,j) {
 		var libs = this.comb_map();
+		var grp = this.group_map();
+		if (grp[i][j] == -1) { throw("no piece at " + i + "," + j); }
+		for (var k = 0; k < libs.length; k++) {
+			if (libs[k].grp == grp[i][j]) {
+				return libs[k].libs;
+			}
+		}
+		throw("group id " + grp[i][j] + " not found.");
 	};
 }
 

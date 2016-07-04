@@ -44,8 +44,8 @@ function goTests() {
 	});
 	this.tests.push(function() {
 		var board = new GoBoard(9).addSeq(test_setup1,1);
-		board.groupLib(0,1);
-		return false;
+		var libs = board.groupLib(0,1);
+		return libs.length == 4;
 	});
 	this.tests.push(function() {
 		var board = new GoBoard(9);
