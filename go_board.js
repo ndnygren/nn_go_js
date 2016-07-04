@@ -94,16 +94,16 @@ function GoBoard(size) {
 	this.matchNeigh = function (i,j,color) {
 		var n = this.neigh(i,j);
 		return n.filter(function(x) {return x[2] === color; });
-	}
+	};
 	this.emptyNeigh = function(i,j) {
 		return this.matchNeigh(i,j,0);
-	}
+	};
 	this.friendNeigh = function(i, j) {
 		return this.matchNeigh(i,j, this.get(i,j));
-	}
+	};
 	this.enemyNeigh = function(i,j) {
 		return this.matchNeigh(i,j, this.get(i,j) == 1 ? 2 : 1);
-	}
+	};
 
 	this.moveValid = function(i,j, color) {
 		if (i < 0 || i >= this.size) { return false; }
@@ -122,10 +122,28 @@ function GoBoard(size) {
 		return false;
 	};
 
+	this.removeGroup = function (rast, g) {
+		return zippr(rast, this.group_map(), function(a,b){
+			return zippr(a, b, function (ocell, gcell) {
+				return gcell == g ? 0 : ocell;
+			});
+		});
+	};
+
 	this.add = function(i,j, color) {
 		var output = this.copy();
+		var grp = this.group_map();
+		var g;
 		output.seq = this.seq.concat([[i,j]]);
 		output.data[i][j] = color;
+		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
+		for (k = 0; k < n.length; k++) {
+			if (this.groupLib(n[k][0],n[k][1]).length == 1) {
+				g = grp[n[k][0]][n[k][1]];
+				output.data = this.removeGroup(output.data, g);
+			}
+		}
+
 		return output;
 	};
 

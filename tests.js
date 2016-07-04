@@ -74,4 +74,11 @@ function goTests() {
 		var seq = [[1,0],[2,2],[0,1],[3,0],[2,1],[3,1],[1,2],[0,3],[2,0],[1,3],[0,2],[1,1]];
 		return !board.moveSeqValid(seq,1);
 	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var seq = [[3,3],[4,3],[4,4],[3,4],[4,2],[3,5],[5,3],[5,4],[4,3]];
+		return board.moveSeqValid(seq,1);
+	});
+
+
 }
