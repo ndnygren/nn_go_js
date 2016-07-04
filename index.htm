@@ -34,9 +34,10 @@
 		var board = new GoBoard(9);
 		var gt = new goTests();
 		function loadInput() {
-			var cw = new CanvasWriter(board, document.getElementById("drawing_window"));
 			var input_text = document.getElementById("input_box").value;
 			var moves = JSON.parse(input_text);
+			board = board.addSeq(moves,1);
+			var cw = new CanvasWriter(board, document.getElementById("drawing_window"));
 			return false;
 		}
 		document.getElementById("test_div").innerHTML = gt.runTests();

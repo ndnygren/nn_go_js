@@ -141,7 +141,20 @@ function CanvasWriter(board, canvas) {
 		}
 	}
 
+	this.drawPieces = function () {
+		for (var i = 0; i < this.board.size; i++) {
+			for (var j = 0; j < this.board.size; j++) {
+				if (this.board.get(i,j) == 1) {
+					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), 15, "white", "gray");
+				} else if (this.board.get(i,j) == 2) {
+					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), 15, "black", "gray");
+				}
+			}
+		}
+	}
+
 	this.resetScale();
 	this.drawLines();
+	this.drawPieces();
 }
 

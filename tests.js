@@ -19,10 +19,10 @@ function goTests() {
 
 	this.tests.push(function() {
 		var board = new GoBoard(9);
-		return board.moveValid(1,4) && !board.moveValid(10,10);
+		return board.moveValid(1,4,1) && !board.moveValid(10,10,1);
 	});
 	this.tests.push(function() {
 		var board = new GoBoard(9);
-		return board.moveSeqValid([[1,1],[0,0],[1,0]]) && !board.moveSeqValid([[1,1],[0,,0],[1,1]]);
+		return board.moveSeqValid([[1,1],[0,0],[1,0]],1) && !board.moveSeqValid([[1,1],[0,0],[1,1]],1);
 	});
 }

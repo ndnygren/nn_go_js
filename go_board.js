@@ -64,40 +64,39 @@ function GoBoard(size) {
 		return output;
 	};
 
-	this.moveValid = function(i,j) {
+	this.moveValid = function(i,j, color) {
 		if (i < 0 || i >= this.size) { return false; }
 		if (j < 0 || j >= this.size) { return false; }
 		return this.get(i,j) === 0;
 	};
 
 	this.add = function(i,j, color) {
-		var output = this.copy()
+		var output = this.copy();
 		output.data[i][j] = color;
 		return output;
 	};
 
-	this.addSeq = function(arr) {
+	this.addSeq = function(arr, color) {
 		var current = this;
 		for (var i = 0; i < arr.length; i++) {
-			current = current.add(arr[i][0], arr[i][1]);
+			current = current.add(arr[i][0], arr[i][1], ((color + i) % 2) +1);
 		}
 		return current;
-	}
+	};
 
-	this.firstInvalid = function(arr) {
+	this.firstInvalid = function(arr, color) {
 		var current = this;
 		for (var i = 0; i < arr.length; i++) {
-			if (!current.moveValid(arr[i][0], arr[i][1])) {
+			if (!current.moveValid(arr[i][0], arr[i][1], ((color+i) % 2) + 1)) {
 				return i;
 			}
-			current = current.add(arr[i][0], arr[i][1], (i % 2) + 1);
-			console.log("i: " + JSON.stringify(current));
+			current = current.add(arr[i][0], arr[i][1], ((color+i) % 2) + 1);
 		}
 		return -1;
 	};
 
-	this.moveSeqValid = function (arr) {
-		return this.firstInvalid(arr) == -1;
+	this.moveSeqValid = function (arr, color) {
+		return this.firstInvalid(arr, color) == -1;
 	};
 }
 
