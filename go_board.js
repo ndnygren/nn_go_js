@@ -102,11 +102,11 @@ function GoBoard(size) {
 	this.neigh = function(i,j) {
 		var output = [];
 		if (i > 0) {output.push([i-1, j, this.get(i-1, j)]); }
-		if (j > 0) {output.push([i, j-1, this.get(i, j-j)]); }
+		if (j > 0) {output.push([i, j-1, this.get(i, j-1)]); }
 		if (i+1 < this.size) {output.push([i+1, j, this.get(i+1, j)]); }
 		if (j+1 < this.size) {output.push([i, j+1, this.get(i, j+1)]); }
 		return output;
-	}
+	};
 
 	this.lib_map = function() {
 		var output = this.data.map(function(row) { return row.map(function (col) { return []; }); });
@@ -120,6 +120,54 @@ function GoBoard(size) {
 				}
 			}
 		}
+		return output;
+	};
+
+	this.pointOrder = function (a,b) {
+		for (var i = 0; i < a.length; i++) {
+			if (a[i] < b[i]) {
+				return -1;
+			} else if (a[i] > b[i]) {
+				return 1;
+			}
+		}
+		return 0;
+	};
+
+	this.pointMin = function (a,b) {
+		if (this.pointOrder(a,b) < 0) {
+			return a;
+		}
+		return b;
+	};
+
+	this.group_map = function() {
+		var output = this.data.map(function(row) { return row.map(function(cell) { return -1; }); });
+		var n;
+		var board = this;
+		var current;
+		var g_id = 1;
+		var stack = [];
+		for (var i = 0; i < this.size; i++) {
+			for (var j = 0; j < this.size; j++) {
+				if (this.get(i,j) !== 0 && output[i][j] == -1) {
+					stack.push([i,j]);
+					while (stack.length > 0) {
+						current = stack[stack.length -1];
+						stack.pop();
+						output[current[0]][current[1]] = g_id;
+						n = this.neigh(current[0],current[1]).filter(function(x) {return x[2] == board.get(current[0],current[1]); });
+						for (var k = 0; k < n.length; k++) {
+							if (this.get(n[k][0],n[k][1]) !== 0 && output[n[k][0]][n[k][1]] == -1) {
+								stack.push(n[k]);
+							}
+						}
+					}
+					g_id++;
+				}
+			}
+		}
+
 		return output;
 	};
 }

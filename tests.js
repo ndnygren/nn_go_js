@@ -30,7 +30,17 @@ function goTests() {
 	this.tests.push(function() {
 		var board = new GoBoard(9).addSeq(test_setup1,1);
 		var libs = board.lib_map();
-		console.log(JSON.stringify(libs));
 		return libs[0][1].length == 2;
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var min = board.pointMin([2,6],[3,5]);
+		return min[0] == 2 && min[1] == 6;
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var groups = board.group_map();
+		console.log(JSON.stringify(groups));
+		return groups[1][0] == groups[2][0] && groups[1][2] != groups[2][2];
 	});
 }
