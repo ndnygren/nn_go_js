@@ -40,7 +40,18 @@ function goTests() {
 	this.tests.push(function() {
 		var board = new GoBoard(9).addSeq(test_setup1,1);
 		var groups = board.group_map();
-		console.log(JSON.stringify(groups));
 		return groups[1][0] == groups[2][0] && groups[1][2] != groups[2][2];
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9).addSeq(test_setup1,1);
+		board.groupLib(0,1);
+		return false;
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var arr1 = [1,2,3,4,5,6];
+		var arr2 = [1,3,5,6,8,9];
+		var m = uniqueMerge(arr1,arr2, function(a,b) { return a-b; });
+		return board.pointOrder([1,2,3,4,5,6,8,9],m) === 0;
 	});
 }

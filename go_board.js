@@ -38,6 +38,32 @@ function classifyr(arr, func) {
 	return output;
 }
 
+// assumes argument lists are already sorted and unique
+function uniqueMerge(arr1, arr2, order) {
+	var output = [];
+	var i = 0,j = 0;
+
+	while (i < arr1.length || j < arr2.length) {
+		if (i == arr1.length) {
+			output.push(arr2[j]);
+			j++;
+		} else if (j == arr2.length) {
+			output.push(arr1[i]);
+			i++;
+		} else if (order(arr1[i],arr2[j]) === 0) {
+			i++;
+		} else if (order(arr1[i],arr2[j]) < 0) {
+			output.push(arr1[i]);
+			i++;
+		} else {
+			output.push(arr2[j]);
+			j++;
+		}
+	}
+
+	return output;
+}
+
 function GoBoard(size) {
 	this.size = size;
 	this.data = [];
@@ -109,6 +135,7 @@ function GoBoard(size) {
 	};
 
 	this.lib_map = function() {
+		if (this.l_cache) { return this.l_cache; }
 		var output = this.data.map(function(row) { return row.map(function (col) { return []; }); });
 		var n;
 		for (var i = 0; i < this.size; i++) {
@@ -120,6 +147,8 @@ function GoBoard(size) {
 				}
 			}
 		}
+
+		this.l_cache = output;
 		return output;
 	};
 
@@ -142,6 +171,7 @@ function GoBoard(size) {
 	};
 
 	this.group_map = function() {
+		if (this.g_cache) { return this.g_cache; }
 		var output = this.data.map(function(row) { return row.map(function(cell) { return -1; }); });
 		var n;
 		var board = this;
@@ -168,7 +198,29 @@ function GoBoard(size) {
 			}
 		}
 
+		this.g_cache = output;
 		return output;
+	};
+
+	this.comb_map = function() {
+		if (this.c_cache) { return this.c_cache; }
+		var libs = this.lib_map();
+		var grps = this.group_map();
+		var output = zippr(libs,grps, function(a,b) {
+			return zippr(a,b, function(q,r) {
+				return {"grp": r, "libs":q};
+			});
+		});
+		output = assocFoldr(output, function(a,b) {
+			return a.concat(b);
+		});
+
+		this.c_cache = output;
+		return output;
+	};
+
+	this.groupLib = function(i,j) {
+		var libs = this.comb_map();
 	};
 }
 
