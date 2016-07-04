@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<meta content="utf-8" http-equiv="encoding">
+		<script type="text/javascript" src="go_board.js"></script>
+		<script type="text/javascript" src="go_canvas.js"></script>
+		<title>Go tester</title>
+		<link href="style.css" rel="stylesheet" type="text/css" />
+	</head>
+	<body>
+		<h1>Go</h1>
+		<div id="main_content_div" class="outer_div">
+			<div class="inner_div">
+				<textarea id="input_box">
+					[[0,0],[2,2]]
+				</textarea>
+			</div>
+			<div class="inner_div">
+				<button onclick="loadInput();">Load</button>
+			</div>
+		</div>
+		<div class="outer_div">
+				<div id="canvas_div" class="inner_div">
+					<canvas id="drawing_window" width=500 height=500>
+					</canvas>
+				</div>
+				<div id="output_div" class="inner_div"></div>
+		</div>
+		<div id="test_div" class="outer_div"></div>
+	</body>
+	<script type="text/javascript">
+		var board = new GoBoard(9);
+		function loadInput() {
+			var cw = new CanvasWriter(document.getElementById("drawing_window"));
+			var input_text = document.getElementById("input_box").value;
+			return false;
+		}
+		document.getElementById("input_box").value = localStorage.getItem("last_construction");
+	</script>
+</html>

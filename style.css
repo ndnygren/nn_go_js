@@ -1,0 +1,67 @@
+html {
+	background-color: saddlebrown;
+}
+
+body {
+	background-color: whitesmoke;
+	margin-left:20px;
+	margin-right:20px;
+	border: 1px dotted black;
+	padding: 20px;
+}
+
+div {
+	position: relative;
+	background-color: blanchedalmond;
+	border: 1px dotted black;
+	padding: 2px;
+	margin-bottom: 2px;
+}
+
+
+#main_content_div{
+}
+
+.outer_div {
+}
+
+.inner_div {
+	display: inline-block;
+	border:none;
+	vertical-align: text-top;
+}
+
+#graph_div {
+	margin-left:5px;
+	width: 400px;
+	height: 150px;
+}
+
+canvas {
+	background-color: white;
+	border: 1px dotted black;
+	padding: 2px;
+	margin-bottom: 2px;
+}
+
+textarea {
+	width: 550px;
+	height: 80px;
+}
+
+ul.clicky_menu_list li {
+	background-color:white;
+	list-style-type: none;
+	margin: 5px;
+	padding: 2px;
+	border: 1px dotted black;
+	box-shadow: 0 2px 2px rgba(0,0,0,.3);
+}
+
+ul.clicky_menu_list li:hover {
+	background-color:gray;
+}
+
+ul.clicky_menu_list li:active {
+	background-color:black;
+}
