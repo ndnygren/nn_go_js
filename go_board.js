@@ -66,6 +66,7 @@ function uniqueMerge(arr1, arr2, order) {
 
 function GoBoard(size) {
 	this.size = size;
+	this.seq = [];
 	this.data = [];
 	for (var i = 0; i < size; i++) {
 		this.data.push([]);
@@ -111,11 +112,11 @@ function GoBoard(size) {
 		if (this.emptyNeigh(i,j).length > 0) { return true; }
 		var n = this.matchNeigh(i,j,color);
 		for (var k = 0; k < n.length; k++) {
-			if (this.groupLib(n[0],n[1]).length > 1) { return true; }
+			if (this.groupLib(n[k][0],n[k][1]).length > 1) { return true; }
 		}
 		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
 		for (k = 0; k < n.length; k++) {
-			if (this.groupLib(n[0],n[1]).length == 1) { return true; }
+			if (this.groupLib(n[k][0],n[k][1]).length == 1) { return true; }
 
 		}
 		return false;
@@ -123,6 +124,7 @@ function GoBoard(size) {
 
 	this.add = function(i,j, color) {
 		var output = this.copy();
+		output.seq = this.seq.concat([[i,j]]);
 		output.data[i][j] = color;
 		return output;
 	};

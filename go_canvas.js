@@ -180,6 +180,7 @@ function CanvasWriter(board, canvas) {
 		if (cw.board.moveValid(x,y,cw.color)) {
 			cw.redraw(cw.board.add(x,y,cw.color));
 			cw.color = cw.color == 2 ? 1 : 2;
+			console.log(JSON.stringify(cw.board.seq));
 		}
 	});
 }

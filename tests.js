@@ -54,4 +54,24 @@ function goTests() {
 		var m = uniqueMerge(arr1,arr2, function(a,b) { return a-b; });
 		return board.pointOrder([1,2,3,4,5,6,8,9],m) === 0;
 	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var seq = [[3,2],[2,4],[4,3],[4,5],[5,2],[6,5],[4,1],[4,2]];
+		return !board.moveSeqValid(seq,1);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var seq = [[2,3],[5,3],[3,4],[4,2],[3,2],[4,4],[4,3],[3,3]];
+		return board.moveSeqValid(seq,1);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var seq = [[1,0],[2,2],[0,1],[3,0],[2,1],[3,1],[1,2],[0,3],[2,0],[1,3],[0,2],[4,2],[0,0],[1,1]];
+		return board.moveSeqValid(seq,1);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var seq = [[1,0],[2,2],[0,1],[3,0],[2,1],[3,1],[1,2],[0,3],[2,0],[1,3],[0,2],[1,1]];
+		return !board.moveSeqValid(seq,1);
+	});
 }
