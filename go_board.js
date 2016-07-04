@@ -98,5 +98,29 @@ function GoBoard(size) {
 	this.moveSeqValid = function (arr, color) {
 		return this.firstInvalid(arr, color) == -1;
 	};
+
+	this.neigh = function(i,j) {
+		var output = [];
+		if (i > 0) {output.push([i-1, j, this.get(i-1, j)]); }
+		if (j > 0) {output.push([i, j-1, this.get(i, j-j)]); }
+		if (i+1 < this.size) {output.push([i+1, j, this.get(i+1, j)]); }
+		if (j+1 < this.size) {output.push([i, j+1, this.get(i, j+1)]); }
+		return output;
+	}
+
+	this.lib_map = function() {
+		var output = this.data.map(function(row) { return row.map(function (col) { return []; }); });
+		var n;
+		for (var i = 0; i < this.size; i++) {
+			for (var j = 0; j < this.size; j++) {
+				if (this.get(i,j) !== 0) {
+
+					n = this.neigh(i,j).filter(function(x) {return x[2] === 0; });
+					output[i][j] = output[i][j].concat(n.map(function(x) { return [x[0],x[1]]; }));
+				}
+			}
+		}
+		return output;
+	};
 }
 

@@ -1,4 +1,6 @@
 
+var test_setup1 = [[1,0],[2,2],[0,1],[3,3],[2,1],[4,4],[1,2],[5,5],[2,0],[4,5],[0,2]];
+
 function goTests() {
 	var gt = this;
 	this.tests = [];
@@ -24,5 +26,11 @@ function goTests() {
 	this.tests.push(function() {
 		var board = new GoBoard(9);
 		return board.moveSeqValid([[1,1],[0,0],[1,0]],1) && !board.moveSeqValid([[1,1],[0,0],[1,1]],1);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var libs = board.lib_map();
+		console.log(JSON.stringify(libs));
+		return libs[0][1].length == 2;
 	});
 }
