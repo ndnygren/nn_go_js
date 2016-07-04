@@ -52,7 +52,7 @@ function GoBoard(size) {
 		if (i < 0 || i >= this.size) { throw(i + " is out of range."); }
 		if (j < 0 || j >= this.size) { throw(j + " is out of range."); }
 		return this.data[i][j];
-	}
+	};
 
 	this.copy = function() {
 		var output = new GoBoard(this.size);
@@ -62,12 +62,42 @@ function GoBoard(size) {
 			}
 		}
 		return output;
-	}
+	};
 
 	this.moveValid = function(i,j) {
 		if (i < 0 || i >= this.size) { return false; }
 		if (j < 0 || j >= this.size) { return false; }
 		return this.get(i,j) === 0;
+	};
+
+	this.add = function(i,j, color) {
+		var output = this.copy()
+		output.data[i][j] = color;
+		return output;
+	};
+
+	this.addSeq = function(arr) {
+		var current = this;
+		for (var i = 0; i < arr.length; i++) {
+			current = current.add(arr[i][0], arr[i][1]);
+		}
+		return current;
 	}
+
+	this.firstInvalid = function(arr) {
+		var current = this;
+		for (var i = 0; i < arr.length; i++) {
+			if (!current.moveValid(arr[i][0], arr[i][1])) {
+				return i;
+			}
+			current = current.add(arr[i][0], arr[i][1], (i % 2) + 1);
+			console.log("i: " + JSON.stringify(current));
+		}
+		return -1;
+	};
+
+	this.moveSeqValid = function (arr) {
+		return this.firstInvalid(arr) == -1;
+	};
 }
 

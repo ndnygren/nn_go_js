@@ -15,10 +15,14 @@ function goTests() {
 		if(log_entry != "") { console.log(log_entry); }
 		return assocFoldr(numeric, function(a,b) {return a+b; })
 			+ " tests out of " + numeric.length + " passed.";
-	}
+	};
 
 	this.tests.push(function() {
 		var board = new GoBoard(9);
 		return board.moveValid(1,4) && !board.moveValid(10,10);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(9);
+		return board.moveSeqValid([[1,1],[0,0],[1,0]]) && !board.moveSeqValid([[1,1],[0,,0],[1,1]]);
 	});
 }
