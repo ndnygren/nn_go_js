@@ -3,9 +3,9 @@ function GoBoard(size) {
 	this.size = size;
 	this.data = [];
 	for (var i = 0; i < size; i++) {
-		data.push([]);
+		this.data.push([]);
 		for (var j = 0; j < size; j++) {
-			data[i].push(0);
+			this.data[i].push(0);
 		}
 	}
 

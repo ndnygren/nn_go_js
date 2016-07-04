@@ -32,10 +32,11 @@
 	<script type="text/javascript">
 		var board = new GoBoard(9);
 		function loadInput() {
-			var cw = new CanvasWriter(document.getElementById("drawing_window"));
+			var cw = new CanvasWriter(board, document.getElementById("drawing_window"));
 			var input_text = document.getElementById("input_box").value;
+			var moves = JSON.parse(input_text);
 			return false;
 		}
-		document.getElementById("input_box").value = localStorage.getItem("last_construction");
+		//document.getElementById("input_box").value = localStorage.getItem("last_go_moves");
 	</script>
 </html>
