@@ -12,7 +12,7 @@ function CanvasWriter(board, canvas) {
 	this.data_y_high = this.board.size;
 	this.data_scale = 10.0;
 	this.vert_offs = 0.0;
-	this.colors = {};
+	this.color = 1;
 
 	// blanks-out canvas (white)
 	this.reset = function() {
@@ -125,15 +125,21 @@ function CanvasWriter(board, canvas) {
 	// stretches and translates a single point horizontally
 	this.scaleX = function(x) {
 		return (x - this.data_x_low)*this.scaleh + this.border;
-	}
+	};
+	this.scaleXRev = function(x) {
+		return (x - this.border)/this.scaleh + this.data_x_low;
+	};
 
 	// stretches and translates a single point vertically
 	this.scaleY = function(y) {
 		return this.height - (y - this.data_y_low)*this.scalev + this.border + this.vert_offs;
 	}
+	this.scaleYRev = function(y) {
+		return (this.height + this.border + this.vert_offs - y)/this.scalev + this.data_y_low;
+	}
 
 	this.drawLines = function() {
-		for (var i = 0; i < this.board.size; i++ ){ 
+		for (var i = 0; i < this.board.size; i++ ){
 			for (var j = 0; j < this.board.size; j++ ){
 				this.drawLine_uns( this.scaleX(0), this.scaleY(j), this.scaleX(this.board.size-1), this.scaleY(j), "black", 1);
 				this.drawLine_uns( this.scaleX(i), this.scaleY(0), this.scaleX(i), this.scaleY(this.board.size-1), "black", 1);
@@ -153,8 +159,28 @@ function CanvasWriter(board, canvas) {
 		}
 	}
 
+	this.redraw = function(board) {
+		this.board = board;
+		this.reset();
+		this.drawLines();
+		this.drawPieces();
+	}
+
 	this.resetScale();
 	this.drawLines();
 	this.drawPieces();
+
+
+	var cw = this;
+
+	this.canvas.addEventListener('click', function(e) {
+		var rect = canvas.getBoundingClientRect();
+		var x = Math.floor(cw.scaleXRev(e.clientX - rect.left)+0.5);
+		var y = Math.floor(cw.scaleYRev(e.clientY - rect.top)+0.5);
+		if (cw.board.moveValid(x,y,cw.color)) {
+			cw.redraw(cw.board.add(x,y,cw.color));
+			cw.color = cw.color == 2 ? 1 : 2;
+		}
+	});
 }
 
