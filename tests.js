@@ -1,6 +1,13 @@
 
 var test_setup1 = [[1,0],[2,2],[0,1],[3,3],[2,1],[4,4],[1,2],[5,5],[2,0],[4,5],[0,2]];
 
+function hable(num) {
+	this.data = num;
+
+	this.hash = function() { return this.data; };
+	this.equalTo = function(rhs) { return this.data==rhs.data; };
+}
+
 function goTests() {
 	var gt = this;
 	this.tests = [];
@@ -78,6 +85,15 @@ function goTests() {
 		var board = new GoBoard(9);
 		var seq = [[3,3],[4,3],[4,4],[3,4],[4,2],[3,5],[5,3],[5,4],[4,3]];
 		return board.moveSeqValid(seq,1);
+	});
+	this.tests.push(function() {
+		var ht = new HashTable();
+		ht.set(new hable(3),3);
+		ht.set(new hable(4),4);
+		ht.set(new hable(5),5);
+		ht.set(new hable(6),6);
+		ht.set(new hable(1004),1004);
+		return ht.get(new hable(4))==4 && ht.has(new hable(6)) && !ht.has(new hable(7));
 	});
 
 

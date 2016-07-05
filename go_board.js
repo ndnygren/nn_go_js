@@ -64,6 +64,36 @@ function uniqueMerge(arr1, arr2, order) {
 	return output;
 }
 
+function HashTable() {
+	this.cap = 1000;
+	this.data = [];
+	for (var i = 0; i < this.cap; i++) { this.data.push([]); }
+
+	this.set = function(key, data) {
+		var h = key.hash()%this.cap;
+		this.data[h].push({"key":key, "data":data});
+	};
+
+	this.get = function(key) {
+		var h = key.hash()%this.cap;
+		for (var i = 0; i < this.data[h].length; i++) {
+			if (key.equalTo(this.data[h][i].key)) {
+				return this.data[h][i].data;
+			}
+		}
+		throw("key " + key + " not found");
+	};
+
+	this.has = function(key) {
+		try {
+			this.get(key);
+		} catch (e) {
+			return false;
+		}
+		return true;
+	};
+}
+
 function GoBoard(size) {
 	this.size = size;
 	this.seq = [];
@@ -90,6 +120,27 @@ function GoBoard(size) {
 		}
 		return output;
 	};
+
+	this.hash = function() {
+		var cap = 10000;
+		var flat = assocFoldr(this.data, function (a,b) {
+			return a.concat(b);
+		});
+		return assocFoldr(flat, function (a,b) {
+			return (2*a + b)%cap;
+		});
+	}
+
+	this.equalTo = function(rhs) {
+		var mask = zippr(this.data, rhs.data, function(a,b){
+			return zippr(a,b, function(q,r) {
+				return q == r;
+			});
+		});
+		return assocFoldr(mask.map(function(x) {
+			return assocFoldr(x, function(a,b) {return a && b;});
+		}), function(a,b) { return a && b; });
+	}
 
 	this.matchNeigh = function (i,j,color) {
 		var n = this.neigh(i,j);
