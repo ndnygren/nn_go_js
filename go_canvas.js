@@ -174,13 +174,17 @@ function CanvasWriter(board, canvas) {
 	var cw = this;
 
 	this.canvas.addEventListener('click', function(e) {
+		var nb;
 		var rect = canvas.getBoundingClientRect();
 		var x = Math.floor(cw.scaleXRev(e.clientX - rect.left)+0.5);
 		var y = Math.floor(cw.scaleYRev(e.clientY - rect.top)+0.5);
 		if (cw.board.moveValid(x,y,cw.color)) {
-			cw.redraw(cw.board.add(x,y,cw.color));
-			cw.color = cw.color == 2 ? 1 : 2;
-			console.log(JSON.stringify(cw.board.seq));
+			nb = cw.board.add(x,y,cw.color);
+			if (new GoBoard(nb.size).moveSeqValid(nb.seq,1)){
+				cw.redraw(cw.board.add(x,y,cw.color));
+				cw.color = cw.color == 2 ? 1 : 2;
+				console.log(JSON.stringify(cw.board.seq));
+			}
 		}
 	});
 }

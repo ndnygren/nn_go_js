@@ -87,6 +87,11 @@ function goTests() {
 		return board.moveSeqValid(seq,1);
 	});
 	this.tests.push(function() {
+		var board = new GoBoard(9);
+		var seq = [[2,4],[5,4],[3,5],[4,3],[3,3],[4,5],[4,4],[3,4],[4,4],[3,4]];
+		return !board.moveSeqValid(seq,1);
+	});
+	this.tests.push(function() {
 		var ht = new HashTable();
 		ht.set(new hable(3),3);
 		ht.set(new hable(4),4);

@@ -98,6 +98,7 @@ function GoBoard(size) {
 	this.size = size;
 	this.seq = [];
 	this.data = [];
+
 	for (var i = 0; i < size; i++) {
 		this.data.push([]);
 		for (var j = 0; j < size; j++) {
@@ -129,7 +130,7 @@ function GoBoard(size) {
 		return assocFoldr(flat, function (a,b) {
 			return (2*a + b)%cap;
 		});
-	}
+	};
 
 	this.equalTo = function(rhs) {
 		var mask = zippr(this.data, rhs.data, function(a,b){
@@ -140,7 +141,7 @@ function GoBoard(size) {
 		return assocFoldr(mask.map(function(x) {
 			return assocFoldr(x, function(a,b) {return a && b;});
 		}), function(a,b) { return a && b; });
-	}
+	};
 
 	this.matchNeigh = function (i,j,color) {
 		var n = this.neigh(i,j);
@@ -168,7 +169,6 @@ function GoBoard(size) {
 		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
 		for (k = 0; k < n.length; k++) {
 			if (this.groupLib(n[k][0],n[k][1]).length == 1) { return true; }
-
 		}
 		return false;
 	};
@@ -208,11 +208,17 @@ function GoBoard(size) {
 
 	this.firstInvalid = function(arr, color) {
 		var current = this;
+		var history = new HashTable();
 		for (var i = 0; i < arr.length; i++) {
 			if (!current.moveValid(arr[i][0], arr[i][1], ((color+i) % 2) + 1)) {
 				return i;
 			}
 			current = current.add(arr[i][0], arr[i][1], ((color+i) % 2) + 1);
+			if (history.has(current)) {
+				console.log("ko on " + i + ".");
+				return i;
+			}
+			history.set(current,true);
 		}
 		return -1;
 	};
