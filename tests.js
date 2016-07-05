@@ -101,5 +101,4 @@ function goTests() {
 		return ht.get(new hable(4))==4 && ht.has(new hable(6)) && !ht.has(new hable(7));
 	});
 
-
 }
