@@ -65,3 +65,11 @@ ul.clicky_menu_list li:hover {
 ul.clicky_menu_list li:active {
 	background-color:black;
 }
+
+li.activeTurn {
+	background-color:white;
+}
+
+li.inactiveTurn {
+	background-color:gray;
+}

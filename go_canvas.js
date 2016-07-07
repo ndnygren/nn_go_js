@@ -1,4 +1,55 @@
 
+function GameManagerInt(canvas, gamelist, uid) {
+	this.cw = new CanvasWriter(new GoBoard(9), canvas);
+	this.cw.gm = this;
+	this.gamelist = gamelist;
+	this.gamedata;
+	this.uid = 1;
+	this.current_game = -1;
+
+	this.addMove = function(x,y) {
+		if (this.current_game == -1) { throw("no game selected"); }
+		console.log("added move: " + x + ", " + y);
+	}
+
+	this.myTurn = function(obj) {
+		if (obj.buid == this.uid && obj.seq.length % 2 == 1) {
+			return true;
+		} else if (obj.wuid == this.uid && obj.seq.length % 2 == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	this.gameObjToLi = function(obj) {
+		var gm = this;
+		var li = document.createElement("li");
+		li.appendChild(document.createTextNode("game " + obj.id));
+		li.className = this.myTurn(obj) ? "activeTurn" : "inactiveTurn";
+		li.addEventListener('click', function() {
+			var board = new GoBoard(obj.size);
+			if (board.moveSeqValid(obj.seq,1)) {
+				board = board.addSeq(obj.seq,1);
+			} else {
+				alert("invalid move seq in game " + obj.id);
+			}
+			gm.current = obj.id;
+			gm.cw.redraw(board);
+		});
+
+		return li;
+	};
+
+	this.addGames = function(games) {
+		var gm = this;
+		var items = games.detail.map(function (x) { return gm.gameObjToLi(x); });
+		items.map(function(li) {
+			gm.gamelist.appendChild(li);
+		});
+	};
+}
+
 // Class to act as a wrapper for the HTML5 canvas
 function CanvasWriter(board, canvas) {
 	this.canvas = canvas;
@@ -183,6 +234,7 @@ function CanvasWriter(board, canvas) {
 			if (new GoBoard(nb.size).moveSeqValid(nb.seq,1)){
 				cw.redraw(cw.board.add(x,y,cw.color));
 				cw.color = cw.color == 2 ? 1 : 2;
+				cw.gm && cw.gm.addMove(x,y);
 				console.log(JSON.stringify(cw.board.seq));
 			}
 		}
