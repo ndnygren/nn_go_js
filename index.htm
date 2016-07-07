@@ -50,7 +50,7 @@
 		var req = {"type":"games", "uid":1};
 		$.post('go_json.php', {request: JSON.stringify(req)},
 				function(data){
-					gm.addGames(data);
+					gm.addGames(data.detail);
 				});
 	</script>
 </html>

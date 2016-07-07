@@ -7,8 +7,21 @@ function GameManagerInt(canvas, gamelist, uid) {
 	this.uid = 1;
 	this.current_game = -1;
 
+	this.findById = function(id, arr) {
+		var single = arr.filter(function (x) { return x.id == id; });
+		if (single.length === 0) { throw("id " + id + " not found."); }
+		return single[0];
+	};
+
 	this.addMove = function(x,y) {
 		if (this.current_game == -1) { throw("no game selected"); }
+		var game = this.findById(this.current_game, this.gamedata);
+		if (!this.myTurn(game)) {
+			throw("not your turn on game " + game.id + ".");
+		}
+		game.seq.push([x,y]);
+		this.addGames(this.gamedata);
+
 		console.log("added move: " + x + ", " + y);
 	}
 
@@ -34,7 +47,7 @@ function GameManagerInt(canvas, gamelist, uid) {
 			} else {
 				alert("invalid move seq in game " + obj.id);
 			}
-			gm.current = obj.id;
+			gm.current_game = obj.id;
 			gm.cw.redraw(board);
 		});
 
@@ -43,7 +56,11 @@ function GameManagerInt(canvas, gamelist, uid) {
 
 	this.addGames = function(games) {
 		var gm = this;
-		var items = games.detail.map(function (x) { return gm.gameObjToLi(x); });
+		this.gamedata = games;
+		var items = games.map(function (x) { return gm.gameObjToLi(x); });
+		while (gm.gamelist.hasChildNodes()) {
+			gm.gamelist.removeChild(gm.gamelist.childNodes[0]);
+		}
 		items.map(function(li) {
 			gm.gamelist.appendChild(li);
 		});
