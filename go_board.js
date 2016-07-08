@@ -326,7 +326,7 @@ function GoBoard(size) {
 		var tmap = this.simpTerritoryMap();
 		var score = assocFoldr(tmap.map(function (x) {
 			if (x.owner == "black") {return {"b":x.size, "w": 0}; }
-			else if (x.owner == "black") {return {"b":0, "w": x.size}; }
+			else if (x.owner == "white") {return {"b":0, "w": x.size}; }
 			return {"b":0, "w": 0};
 		}), function (a,b) {
 			return {"b":a.b+b.b, "w": a.w+b.w};

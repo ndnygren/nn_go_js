@@ -1,6 +1,6 @@
 
 function GameManagerInt(canvas, gamelist, swindow, uid) {
-	this.cw = new CanvasWriter(new GoBoard(9), canvas);
+	this.cw = new CanvasWriter(new GoBoard(5), canvas);
 	this.cw.gm = this;
 	this.gamelist = gamelist;
 	this.swindow = swindow;
@@ -251,7 +251,6 @@ function CanvasWriter(board, canvas) {
 			nb = cw.board.add(x,y,cw.color);
 			if (new GoBoard(nb.size).moveSeqValid(nb.seq,1)){
 				cw.redraw(cw.board.add(x,y,cw.color));
-				console.log(JSON.stringify(cw.board.scoreFromMap()));
 				cw.color = cw.color == 2 ? 1 : 2;
 				cw.gm && cw.gm.addMove(x,y);
 				console.log(JSON.stringify(cw.board.seq));

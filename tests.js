@@ -100,5 +100,20 @@ function goTests() {
 		ht.set(new hable(1004),1004);
 		return ht.get(new hable(4))==4 && ht.has(new hable(6)) && !ht.has(new hable(7));
 	});
+	this.tests.push(function() {
+		var board = new GoBoard(5);
+		var seq = [[2,4],[0,1],[3,3],[1,0],[4,2],[1,1],[2,3],[2,1],[3,2],[1,2],[4,4],[0,3],[1,4],[3,0]];
+		board = board.addSeq(seq,2);
+		var score = board.scoreFromMap();
+		return score.b == 3 && score.w == 2;
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(5);
+		var seq = [[2,4],[0,1],[3,3],[1,0],[4,2]];
+		board = board.addSeq(seq,2);
+		var score = board.scoreFromMap();
+		return score.b == 1 && score.w == 3;
+	});
+
 
 }
