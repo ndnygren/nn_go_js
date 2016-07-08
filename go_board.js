@@ -147,6 +147,10 @@ function GoBoard(size) {
 		var n = this.neigh(i,j);
 		return n.filter(function(x) {return x[2] === color; });
 	};
+	this.nonemptyNeigh = function (i,j) {
+		var n = this.neigh(i,j);
+		return n.filter(function(x) {return x[2] !== 0; });
+	};
 	this.emptyNeigh = function(i,j) {
 		return this.matchNeigh(i,j,0);
 	};
@@ -215,7 +219,6 @@ function GoBoard(size) {
 			}
 			current = current.add(arr[i][0], arr[i][1], ((color+i) % 2) + 1);
 			if (history.has(current)) {
-				console.log("ko on " + i + ".");
 				return i;
 			}
 			history.set(current,true);
@@ -236,23 +239,100 @@ function GoBoard(size) {
 		return output;
 	};
 
-	this.lib_map = function() {
-		if (this.l_cache) { return this.l_cache; }
-		var output = this.data.map(function(row) { return row.map(function (col) { return []; }); });
-		var n;
+	// argument function must take 2 args (i,j)
+	this.grid_walk = function(func) {
+		var output = this.data.map(function(row) { return row.map(function (col) { return null; }); });
 		for (var i = 0; i < this.size; i++) {
 			for (var j = 0; j < this.size; j++) {
-				if (this.get(i,j) !== 0) {
-
-					n = this.emptyNeigh(i,j);
-					output[i][j] = output[i][j].concat(n.map(function(x) { return [x[0],x[1]]; }));
-				}
+				output[i][j] = func(i,j);
 			}
 		}
+		return output;
+	}
+
+	this.lib_map = function() {
+		if (this.l_cache) { return this.l_cache; }
+		var board = this;
+		var n;
+		var output = this.grid_walk(function (i,j) {
+			if (board.get(i,j) !== 0) {
+				n = board.emptyNeigh(i,j);
+				return n.map(function(x) { return [x[0],x[1]]; });
+			}
+			return [];
+		});
 
 		this.l_cache = output;
 		return output;
 	};
+
+	this.classesToOwners = function(classes) {
+		var owners = classes.map(function (x) {
+			return {"grp": x[0].grp, "owner":assocFoldr(x.map(function (y) {
+				var b = y.neigh.filter(function (z) {return z[2] == 2; });
+				var w = y.neigh.filter(function (z) {return z[2] == 1; });
+				if (y.neigh.length === 0) {
+					return "unclaimed";
+				} else if (b.length === 0) {
+					return "white";
+				} else if (w.length === 0) {
+					return "black";
+				} else {
+					return "mixed";
+				}
+			}), function(a,b) {
+				if (a == "unclaimed" ) { return b; }
+				else if (b == "unclaimed" ) { return a; }
+				else if (a == "mixed" ) { return a; }
+				else if (b == "mixed" ) { return b; }
+				else if (a == b) { return a; }
+				return "mixed";
+			})};
+		});
+		return owners;
+	};
+
+	this.simpTerritoryMap = function() {
+		if (this.t_cache) { return this.t_cache; }
+		var grps = this.group_map();
+		var board = this;
+		var neigh = this.grid_walk(function (i,j) {
+			if (board.get(i,j) === 0) {
+				return board.nonemptyNeigh(i,j);
+			}
+			return [];
+		});
+		var loosegroups = assocFoldr(zippr(neigh, grps, function(a,b) {
+			return zippr(a,b, function(q,r) {
+				return {"grp": r, "neigh":q};
+			});
+		}), function(a,b) {
+			return a.concat(b);
+		});
+		var classes = classifyr(loosegroups, function (x) {return x.grp;} );
+		var sizes = classes.map(function(x) { return {"grp": x[0].grp, "size": x.length}; });
+
+		var owners = this.classesToOwners(classes);
+
+		var output = zippr(owners, sizes, function(a,b) {
+			if (a.id != b.id) { throw("zipping out of order"); }
+			return {"id":a.id, "owner":a.owner, "size": b.size};
+		});
+		this.t_cache = output;
+		return output;
+	}
+
+	this.scoreFromMap = function() {
+		var tmap = this.simpTerritoryMap();
+		var score = assocFoldr(tmap.map(function (x) {
+			if (x.owner == "black") {return {"b":x.size, "w": 0}; }
+			else if (x.owner == "black") {return {"b":0, "w": x.size}; }
+			return {"b":0, "w": 0};
+		}), function (a,b) {
+			return {"b":a.b+b.b, "w": a.w+b.w};
+		});
+		return score;
+	}
 
 	this.pointOrder = function (a,b) {
 		for (var i = 0; i < a.length; i++) {
@@ -282,7 +362,7 @@ function GoBoard(size) {
 		var stack = [];
 		for (var i = 0; i < this.size; i++) {
 			for (var j = 0; j < this.size; j++) {
-				if (this.get(i,j) !== 0 && output[i][j] == -1) {
+				if (output[i][j] == -1) {
 					stack.push([i,j]);
 					while (stack.length > 0) {
 						current = stack[stack.length -1];
@@ -290,7 +370,7 @@ function GoBoard(size) {
 						output[current[0]][current[1]] = g_id;
 						n = this.friendNeigh(current[0],current[1]);
 						for (var k = 0; k < n.length; k++) {
-							if (this.get(n[k][0],n[k][1]) !== 0 && output[n[k][0]][n[k][1]] == -1) {
+							if (output[n[k][0]][n[k][1]] == -1) {
 								stack.push(n[k]);
 							}
 						}
@@ -299,7 +379,6 @@ function GoBoard(size) {
 				}
 			}
 		}
-
 		this.g_cache = output;
 		return output;
 	};

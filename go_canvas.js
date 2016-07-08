@@ -1,8 +1,9 @@
 
-function GameManagerInt(canvas, gamelist, uid) {
+function GameManagerInt(canvas, gamelist, swindow, uid) {
 	this.cw = new CanvasWriter(new GoBoard(9), canvas);
 	this.cw.gm = this;
 	this.gamelist = gamelist;
+	this.swindow = swindow;
 	this.gamedata;
 	this.uid = 1;
 	this.current_game = -1;
@@ -17,18 +18,19 @@ function GameManagerInt(canvas, gamelist, uid) {
 		if (this.current_game == -1) { throw("no game selected"); }
 		var game = this.findById(this.current_game, this.gamedata);
 		if (!this.myTurn(game)) {
+			this.current_game == -1;
 			throw("not your turn on game " + game.id + ".");
 		}
 		game.seq.push([x,y]);
 		this.addGames(this.gamedata);
 
 		console.log("added move: " + x + ", " + y);
-	}
+	};
 
 	this.myTurn = function(obj) {
 		if (obj.buid == this.uid && obj.seq.length % 2 == 1) {
 			return true;
-		} else if (obj.wuid == this.uid && obj.seq.length % 2 == 0) {
+		} else if (obj.wuid == this.uid && obj.seq.length % 2 === 0) {
 			return true;
 		} else {
 			return false;
@@ -85,7 +87,7 @@ function CanvasWriter(board, canvas) {
 	// blanks-out canvas (white)
 	this.reset = function() {
 		this.canvas.getContext('2d').clearRect(0, 0, this.canvas.width, this.canvas.height);
-	}
+	};
 
 	this.drawPointList = function(list) {
 		for (var i in list.line) {
@@ -97,11 +99,11 @@ function CanvasWriter(board, canvas) {
 		for (var i in list.point) {
 			this.drawPoint(list.point[i].x, list.point[i].y);
 		}
-	}
+	};
 
 	this.drawPoint = function(x,y) {
 		this.drawCircle(this.scaleX(x), this.scaleY(y), 2, "red");
-	}
+	};
 
 	this.drawLine = function(line) {
 		var s = line.y2 - line.y1; //rise
@@ -121,7 +123,7 @@ function CanvasWriter(board, canvas) {
 				this.scaleX(line.x2),
 				this.scaleY(line.y2),
 				"rgba(0,255,0,127)", 1);
-	}
+	};
 
 	this.drawArc = function(circle) {
 		this.drawCircle_uns(this.scaleX(circle.x),
@@ -149,12 +151,12 @@ function CanvasWriter(board, canvas) {
 		this.reset();
 		this.resetScale();
 		this.drawAxis();
-	}
+	};
 
 	// direct canvas interaction, creates a circle
 	this.drawCircle = function(x,y,r,color) {
 		this.drawCircle_uns(x,y,r,color,'#000000');
-	}
+	};
 
 	// direct canvas interaction, creates a circle
 	this.drawCircle_uns = function(x,y,r,fill_color, line_color) {
@@ -167,7 +169,7 @@ function CanvasWriter(board, canvas) {
 		context.lineWidth = 1;
 		context.strokeStyle = line_color;
 		context.stroke();
-	}
+	};
 
 	// direct canvas interaction, creates a line
 	this.drawLine_uns = function(x1,y1,x2,y2,color,width) {
@@ -179,16 +181,15 @@ function CanvasWriter(board, canvas) {
 		context.moveTo(x1, y1);
 		context.lineTo(x2, y2);
 		context.stroke();
-	}
+	};
 
 	// fixes the scale for multiple diagrams on a single canvas
 	this.resetScale = function() {
 		this.scaleh = this.width/(this.data_x_high - this.data_x_low);
-		this.scalev = (this.height + 2 * this.border - 2*this.border)
-			/(this.data_y_high - this.data_y_low);
+		this.scalev = (this.height + 2 * this.border - 2*this.border) /(this.data_y_high - this.data_y_low);
 		this.scaleh = Math.min(this.scaleh, this.scalev);
 		this.scalev = this.scaleh;
-	}
+	};
 
 	// stretches and translates a single point horizontally
 	this.scaleX = function(x) {
@@ -201,10 +202,10 @@ function CanvasWriter(board, canvas) {
 	// stretches and translates a single point vertically
 	this.scaleY = function(y) {
 		return this.height - (y - this.data_y_low)*this.scalev + this.border + this.vert_offs;
-	}
+	};
 	this.scaleYRev = function(y) {
 		return (this.height + this.border + this.vert_offs - y)/this.scalev + this.data_y_low;
-	}
+	};
 
 	this.drawLines = function() {
 		for (var i = 0; i < this.board.size; i++ ){
@@ -213,7 +214,7 @@ function CanvasWriter(board, canvas) {
 				this.drawLine_uns( this.scaleX(i), this.scaleY(0), this.scaleX(i), this.scaleY(this.board.size-1), "black", 1);
 			}
 		}
-	}
+	};
 
 	this.drawPieces = function () {
 		for (var i = 0; i < this.board.size; i++) {
@@ -225,14 +226,14 @@ function CanvasWriter(board, canvas) {
 				}
 			}
 		}
-	}
+	};
 
 	this.redraw = function(board) {
 		this.board = board;
 		this.reset();
 		this.drawLines();
 		this.drawPieces();
-	}
+	};
 
 	this.resetScale();
 	this.drawLines();
@@ -250,6 +251,7 @@ function CanvasWriter(board, canvas) {
 			nb = cw.board.add(x,y,cw.color);
 			if (new GoBoard(nb.size).moveSeqValid(nb.seq,1)){
 				cw.redraw(cw.board.add(x,y,cw.color));
+				console.log(JSON.stringify(cw.board.scoreFromMap()));
 				cw.color = cw.color == 2 ? 1 : 2;
 				cw.gm && cw.gm.addMove(x,y);
 				console.log(JSON.stringify(cw.board.seq));

@@ -29,6 +29,7 @@
 				</div>
 				<div id="output_div" class="inner_div">
 					<ul id="game_ul"></ul>
+					<div id="status_window"></div>
 				</div>
 		</div>
 		<div id="test_div" class="outer_div"></div>
@@ -36,7 +37,7 @@
 	<script type="text/javascript">
 		var board = new GoBoard(9);
 		var gt = new goTests();
-		var gm = new GameManagerInt(document.getElementById("drawing_window"), document.getElementById("game_ul"), 1);
+		var gm = new GameManagerInt(document.getElementById("drawing_window"), document.getElementById("game_ul"), document.getElementById("status_window"), 1);
 		function loadInput() {
 			var input_text = document.getElementById("input_box").value;
 			var moves = JSON.parse(input_text);
