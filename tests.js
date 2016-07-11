@@ -121,6 +121,4 @@ function goTests() {
 		var score = board.captureCount();
 		return score.w == 5 && score.b == 1;
 	});
-
-
 }
