@@ -37,6 +37,33 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 		}
 	};
 
+	this.tableFrom2dArray = function(arr1) {
+		var output = document.createElement("table");
+		var topheader = document.createElement("tr");
+		if (arr1.length === 0) { return output; }
+		arr1[0].map( function(cell) {
+			var th = document.createElement("th");
+			th.appendChild(document.createTextNode(cell));
+			topheader.appendChild(th);
+		});
+		output.appendChild(topheader);
+		arr1.slice(1).map(function(row) {
+			var tr = document.createElement("tr");
+			var th = document.createElement("th");
+			th.appendChild(document.createTextNode(row[0]));
+			tr.appendChild(th);
+			row.slice(1).map(function(cell){
+				var td = document.createElement("td");
+				td.appendChild(document.createTextNode(cell));
+				tr.appendChild(td);
+			});
+			output.appendChild(tr);
+
+		});
+
+		return output;
+	}
+
 	this.gameObjToLi = function(obj) {
 		var gm = this;
 		var li = document.createElement("li");
@@ -44,13 +71,27 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 		li.className = this.myTurn(obj) ? "activeTurn" : "inactiveTurn";
 		li.addEventListener('click', function() {
 			var board = new GoBoard(obj.size);
-			if (board.moveSeqValid(obj.seq,1)) {
-				board = board.addSeq(obj.seq,1);
+			var h3 = document.createElement("h3");
+			if (board.moveSeqValid(obj.seq,2)) {
+				board = board.addSeq(obj.seq,2);
 			} else {
 				alert("invalid move seq in game " + obj.id);
 			}
+			var ter_score = board.scoreFromMap();
+			var cap_score = board.captureCount();
+			var scoretable = gm.tableFrom2dArray([["","black","white"],
+				["territory", ter_score.b, ter_score.w],
+				["capture", ter_score.b, cap_score.w]]);
+
 			gm.current_game = obj.id;
 			gm.cw.redraw(board);
+			while (gm.swindow.hasChildNodes()) {
+				gm.swindow.removeChild(gm.swindow.childNodes[0]);
+			}
+			h3.appendChild(document.createTextNode("Game " + obj.id));
+			gm.swindow.appendChild(h3);
+			gm.swindow.appendChild(scoretable);
+
 		});
 
 		return li;
