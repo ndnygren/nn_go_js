@@ -28,9 +28,9 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 	};
 
 	this.myTurn = function(obj) {
-		if (obj.buid == this.uid && obj.seq.length % 2 == 1) {
+		if (obj.buid == this.uid && obj.seq.length % 2 == 0) {
 			return true;
-		} else if (obj.wuid == this.uid && obj.seq.length % 2 === 0) {
+		} else if (obj.wuid == this.uid && obj.seq.length % 2 === 1) {
 			return true;
 		} else {
 			return false;
@@ -271,6 +271,9 @@ function CanvasWriter(board, canvas) {
 
 	this.redraw = function(board) {
 		this.board = board;
+		this.data_x_high = this.board.size;
+		this.data_y_high = this.board.size;
+		this.resetScale();
 		this.reset();
 		this.drawLines();
 		this.drawPieces();
