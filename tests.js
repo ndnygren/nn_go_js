@@ -114,6 +114,13 @@ function goTests() {
 		var score = board.scoreFromMap();
 		return score.b == 1 && score.w == 3;
 	});
+	this.tests.push(function() {
+		var board = new GoBoard(5);
+		var seq = [[0,2],[0,0],[1,1],[2,1],[0,1],[1,2],[1,0],[0,3],[0,0],[2,0]];
+		board = board.addSeq(seq,2);
+		var score = board.captureCount();
+		return score.b == 5 && score.w == 1;
+	});
 
 
 }

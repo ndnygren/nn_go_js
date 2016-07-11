@@ -210,6 +210,37 @@ function GoBoard(size) {
 		return current;
 	};
 
+	this.boardDiff = function(before,after) {
+		var sub = zippr(before, after, function(br, ar) {
+			return zippr(br,ar, function(b,a) {
+				return Math.max(b - a, 0);
+			});
+		});
+		var flat = assocFoldr(sub, function(a,b) { return a.concat(b); });
+		return assocFoldr(flat.map(function (x) {
+			if (x == 2) { return {"w": 1, "b": 0}; }
+			else if (x == 1) { return {"w": 0, "b": 1}; }
+			else { return {"w": 0, "b": 0}; }
+		}), function (a,b) {
+			return {"w": a.w+b.w, "b":a.b+b.b};
+		});
+	}
+
+	this.captureCount = function() {
+		var current = new GoBoard(this.size), next;
+		var output = {"w":0,"b":0}, score;
+
+		for (var i = 0; i < this.seq.length; i++) {
+			next = current.add(this.seq[i][0], this.seq[i][1], (i % 2) + 1);
+			score = this.boardDiff(current.data, next.data);
+			output.w += score.w;
+			output.b += score.b;
+			current = next;
+		}
+
+		return output;
+	}
+
 	this.firstInvalid = function(arr, color) {
 		var current = this;
 		var history = new HashTable();
