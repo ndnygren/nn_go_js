@@ -50,4 +50,23 @@ function getGames($usr_id) {
 	return $output;
 }
 
+function myTurn($game_id, $user_id) {
+	$games = getGames($user_id);
+	$count = 0;
+	$white = false;
+	$black = false;
+
+	foreach ($games as $row) {
+		if ($game_id == $row->id) {
+			$count = count($row->seq);
+			if ($row->buid == $user_id) { $black = true; }
+			if ($row->wuid == $user_id) { $white = true; }
+		}
+	}
+	if ($count % 2 == 0 && $black) { return true; }
+	if ($count % 2 == 1 && $white) { return true; }
+
+	return false;
+}
+
 ?>

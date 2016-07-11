@@ -4,9 +4,7 @@ header('Content-Type: application/json');
 include '../security/dbconnect.php';
 include 'go_db.php';
 
-$seq1 = [[1,0],[2,2],[0,1],[3,3],[2,1],[4,4],[1,2],[5,5],[2,0],[4,5],[0,2]];
-$seq2 = [[1,0],[2,2],[0,1],[3,3]];
-$seq3 = [[1,0],[2,2],[0,1],[3,3],[2,1]];
+$user_id = 1;
 
 if (isset($_POST["request"])) {
 	$post_data = json_decode($_POST["request"],true);
@@ -17,12 +15,21 @@ if (isset($_POST["request"])) {
 		die('{"status":"error", "detail":"request type is missing."}');
 	}
 	if ($post_data['type'] == "games") {
-		if (!isset($post_data['uid'])) {
+		if (!isset($post_data['uid']) || $post_data['uid'] != $user_id) {
 			die('{"status":"error", "detail":"User id is not set."}');
 		}
 		echo '{"status":"success", "detail": ' . json_encode(
-			getGames(1)
+			getGames($user_id)
 		) . '}';
+	}
+	if ($post_data['type'] == "move") {
+		if (!isset($post_data['id']) || !isset($post_data['l']) || !isset($post_data['r'])) {
+			die('{"status":"error", "detail":"incomplete move request."}');
+		}
+		if (!myTurn($post_data['id'], $user_id)) {
+			die('{"status":"error", "detail":"Not your turn."}');
+		}
+		die('{"status":"success", "detail":"good job."}');
 	}
 } else {
 	die('{"status":"error", "detail":"no request sent."}');

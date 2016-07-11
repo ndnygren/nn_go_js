@@ -291,13 +291,15 @@ function CanvasWriter(board, canvas) {
 		var rect = canvas.getBoundingClientRect();
 		var x = Math.floor(cw.scaleXRev(e.clientX - rect.left)+0.5);
 		var y = Math.floor(cw.scaleYRev(e.clientY - rect.top)+0.5);
-		if (cw.board.moveValid(x,y,cw.color)) {
+		var req = {"type": "move", "id": cw.gm.current_game, "l":x, "r": y };
+		if (cw.board.moveValid(x,y,cw.color) && cw.gm.myTurn(cw.gm.findById(cw.gm.current_game, cw.gm.gamedata))) {
 			nb = cw.board.add(x,y,cw.color);
-			if (new GoBoard(nb.size).moveSeqValid(nb.seq,1)){
+			if (new GoBoard(nb.size).moveSeqValid(nb.seq)){
 				cw.redraw(cw.board.add(x,y,cw.color));
 				cw.color = cw.color == 2 ? 1 : 2;
-				cw.gm && cw.gm.addMove(x,y);
 				console.log(JSON.stringify(cw.board.seq));
+				$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
+				cw.gm && cw.gm.addMove(x,y);
 			}
 		}
 	});
