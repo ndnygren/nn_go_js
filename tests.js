@@ -105,21 +105,21 @@ function goTests() {
 		var seq = [[2,4],[0,1],[3,3],[1,0],[4,2],[1,1],[2,3],[2,1],[3,2],[1,2],[4,4],[0,3],[1,4],[3,0]];
 		board = board.addSeq(seq,2);
 		var score = board.scoreFromMap();
-		return score.b == 3 && score.w == 2;
+		return score.w == 3 && score.b == 2;
 	});
 	this.tests.push(function() {
 		var board = new GoBoard(5);
 		var seq = [[2,4],[0,1],[3,3],[1,0],[4,2]];
 		board = board.addSeq(seq,2);
 		var score = board.scoreFromMap();
-		return score.b == 1 && score.w == 3;
+		return score.w == 1 && score.b == 3;
 	});
 	this.tests.push(function() {
 		var board = new GoBoard(5);
 		var seq = [[0,2],[0,0],[1,1],[2,1],[0,1],[1,2],[1,0],[0,3],[0,0],[2,0]];
 		board = board.addSeq(seq,2);
 		var score = board.captureCount();
-		return score.b == 5 && score.w == 1;
+		return score.w == 5 && score.b == 1;
 	});
 
 

@@ -202,10 +202,10 @@ function GoBoard(size) {
 		return output;
 	};
 
-	this.addSeq = function(arr, color) {
+	this.addSeq = function(arr) {
 		var current = this;
 		for (var i = 0; i < arr.length; i++) {
-			current = current.add(arr[i][0], arr[i][1], ((color + i) % 2) +1);
+			current = current.add(arr[i][0], arr[i][1], ((i + 1) % 2) +1);
 		}
 		return current;
 	};
@@ -231,7 +231,7 @@ function GoBoard(size) {
 		var output = {"w":0,"b":0}, score;
 
 		for (var i = 0; i < this.seq.length; i++) {
-			next = current.add(this.seq[i][0], this.seq[i][1], (i % 2) + 1);
+			next = current.add(this.seq[i][0], this.seq[i][1], ((i+1) % 2) + 1);
 			score = this.boardDiff(current.data, next.data);
 			output.w += score.w;
 			output.b += score.b;
@@ -241,7 +241,8 @@ function GoBoard(size) {
 		return output;
 	}
 
-	this.firstInvalid = function(arr, color) {
+	this.firstInvalid = function(arr) {
+		var color = 1;
 		var current = this;
 		var history = new HashTable();
 		for (var i = 0; i < arr.length; i++) {
@@ -257,8 +258,8 @@ function GoBoard(size) {
 		return -1;
 	};
 
-	this.moveSeqValid = function (arr, color) {
-		return this.firstInvalid(arr, color) == -1;
+	this.moveSeqValid = function (arr) {
+		return this.firstInvalid(arr) == -1;
 	};
 
 	this.neigh = function(i,j) {

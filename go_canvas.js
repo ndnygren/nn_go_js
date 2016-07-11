@@ -81,7 +81,7 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 			var cap_score = board.captureCount();
 			var scoretable = gm.tableFrom2dArray([["","black","white"],
 				["territory", ter_score.b, ter_score.w],
-				["capture", ter_score.b, cap_score.w]]);
+				["capture", cap_score.b, cap_score.w]]);
 
 			gm.current_game = obj.id;
 			gm.cw.redraw(board);
@@ -123,7 +123,7 @@ function CanvasWriter(board, canvas) {
 	this.data_y_high = this.board.size;
 	this.data_scale = 10.0;
 	this.vert_offs = 0.0;
-	this.color = 1;
+	this.color = 2;
 
 	// blanks-out canvas (white)
 	this.reset = function() {
