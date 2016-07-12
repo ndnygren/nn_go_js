@@ -1,8 +1,13 @@
 <?php
 header('Content-Type: application/json');
 
-include '../security/dbconnect.php';
+include 'security/dbconnect.php';
+include 'security/sessioncheckhead.php';
 include 'go_db.php';
+
+if (!checkBadge()) {
+	die('{"status":"error", "detail":"faile authentication."}');
+}
 
 $user_id = $_COOKIE['u_t_index'];
 
