@@ -103,7 +103,7 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
 			button = document.createElement("button");
-			button.appendChild(document.createTextNode("Pass"));
+			button.appendChild(document.createTextNode(board.seq.length == 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game"));
 			button.addEventListener('click', gm.makeButtonCallback(obj));
 			gm.swindow.appendChild(button);
 		};

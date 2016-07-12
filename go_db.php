@@ -9,12 +9,13 @@ class GoGame {
 	public $size = 9;
 	public $seq = Array();
 
-	public function __construct($id, $buid, $wuid, $bname, $wname, $seq) {
+	public function __construct($id, $buid, $wuid, $bname, $wname, $size, $seq) {
 		$this->id = $id;
 		$this->wuid = $wuid;
 		$this->buid = $buid;
 		$this->wname = $wname;
 		$this->bname = $bname;
+		$this->size = $size;
 		$this->seq = $seq;
 	}
 }
@@ -36,7 +37,7 @@ function getGames($usr_id) {
 			if ($prev > -1) {
 				$output[] = $temp;
 			}
-			$temp = new GoGame($row["game_id"], $row["wid"], $row["bid"], $row["wname"], $row["bname"], Array());
+			$temp = new GoGame($row["game_id"], $row["wid"], $row["bid"], $row["wname"], $row["bname"], $row["size"], Array());
 			$prev = $row["game_id"];
 		}
 		if ($row["move_id"] != null) {
