@@ -42,6 +42,15 @@ if (isset($_POST["request"])) {
 		}
 		addPass($post_data['id'], $post_data['b'], $post_data['w']);
 		echo '{"status":"success", "detail":"good job."}';
+	} else if ($post_data['type'] == "challenges") {
+		echo '{"status":"success", "detail":' . json_encode(getChallenges($user_id)) . '}';
+
+	} else if ($post_data['type'] == "challenge") {
+		if (!isset($post_data['id']) || !isset($post_data['size'])) {
+			die('{"status":"error", "detail":"incomplete challenge request."}');
+		}
+		addChallenge($post_data['id'], $user_id, $post_data['size']);
+		echo '{"status":"success", "detail":"good job."}';
 	} else {
 		die('{"status":"error", "detail":"Unrecognized type."}');
 	}

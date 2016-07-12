@@ -20,6 +20,18 @@ class GoGame {
 	}
 }
 
+function getChallenges($usr_id) {
+	$result = db_query("SELECT id,username FROM users WHERE NOT EXISTS (SELECT * FROM go_header WHERE status IS NULL AND ((black_user=id AND white_user=".$usr_id.") OR (black_user=".$usr_id." AND white_user=id))) AND id!=".$usr_id);
+	return $result;
+}
+
+function addChallenge($aid, $bid, $size) {
+	$coin = rand(0,1) == 0;
+	$w = $coin ? $aid : $bid;
+	$b = $coin ? $bid : $aid;
+	return db_update("INSERT INTO go_header (white_user, black_user, size) VALUES (".$w.",".$b.",".$size.")");
+}
+
 function getGames($usr_id) {
 	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r "
 		." FROM users AS B, users AS W, go_header "

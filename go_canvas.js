@@ -1,9 +1,10 @@
 
-function GameManagerInt(canvas, gamelist, swindow, uid) {
+function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 	this.cw = new CanvasWriter(new GoBoard(5), canvas);
 	this.cw.gm = this;
 	this.gamelist = gamelist;
 	this.swindow = swindow;
+	this.cwindow = cwindow;
 	this.gamedata;
 	this.uid = uid;
 	this.current_game = -1;
@@ -33,6 +34,32 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 		} else {
 			return false;
 		}
+	};
+
+	this.findChallenges = function() {
+		var gm = this;
+		var req = {"type": "challenges"};
+		$.post('go_json.php', {request: JSON.stringify(req)}, function(data){
+			var selec = document.createElement("select");
+			var button = document.createElement("button");
+			button.appendChild(document.createTextNode("Challenge"));
+			button.addEventListener('click', function() {
+				var req2 = {"type": "challenge", "id": selec.value, "size": 9};
+				$.post('go_json.php', {request: JSON.stringify(req2)}, function(data) {});
+				selec.remove(selec.selectedIndex);
+			});
+			data.detail.map(function(x) {
+				var opt = document.createElement("option");
+				opt.value = x.id;
+				opt.appendChild(document.createTextNode(x.username));
+				selec.appendChild(opt);
+			});
+			gm.cwindow.appendChild(selec);
+			gm.cwindow.appendChild(button);
+
+
+		});
+
 	};
 
 	this.tableFrom2dArray = function(arr1) {
@@ -129,6 +156,8 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 			gm.gamelist.appendChild(li);
 		});
 	};
+
+	this.findChallenges();
 }
 
 // Class to act as a wrapper for the HTML5 canvas
@@ -318,7 +347,7 @@ function CanvasWriter(board, canvas) {
 			nb = cw.board.add(x,y,cw.color);
 			if (new GoBoard(nb.size).moveSeqValid(nb.seq)){
 				cw.redraw(nb);
-				console.log(JSON.stringify(cw.board.seq));
+				//console.log(JSON.stringify(cw.board.seq));
 				$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
 				cw.gm && cw.gm.addMove(x,y);
 			}
