@@ -23,8 +23,6 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 		}
 		game.seq.push([x,y]);
 		this.addGames(this.gamedata);
-
-		console.log("added move: " + x + ", " + y);
 	};
 
 	this.myTurn = function(obj) {
@@ -62,20 +60,34 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 		});
 
 		return output;
-	}
+	};
 
-	this.gameObjToLi = function(obj) {
+	this.makeButtonCallback = function (obj) {
 		var gm = this;
-		var li = document.createElement("li");
-		li.appendChild(document.createTextNode("game " + obj.id));
-		li.className = this.myTurn(obj) ? "activeTurn" : "inactiveTurn";
-		li.addEventListener('click', function() {
+		var board = new GoBoard(obj.size).addSeq(obj.seq);
+		var ter_score = board.scoreFromMap();
+		var cap_score = board.captureCount();
+		var req = {"type": "pass", "id": gm.current_game, "b": ter_score.b+cap_score.b, "w":ter_score.w+cap_score.w};
+		return function () {
+			$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
+			gm.addMove(-1,-1);
+		};
+	};
+
+	this.makeLiCallback = function (obj) {
+		var gm = this;
+		var button;
+		return function() {
+			while (gm.swindow.hasChildNodes()) {
+				gm.swindow.removeChild(gm.swindow.childNodes[0]);
+			}
 			var board = new GoBoard(obj.size);
 			var h3 = document.createElement("h3");
 			if (board.moveSeqValid(obj.seq,2)) {
 				board = board.addSeq(obj.seq,2);
 			} else {
-				alert("invalid move seq in game " + obj.id);
+				gm.swindow.appendChild(document.createTextNode( "invalid move seq in game " + obj.id));
+				return;
 			}
 			var ter_score = board.scoreFromMap();
 			var cap_score = board.captureCount();
@@ -87,14 +99,21 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 
 			gm.current_game = obj.id;
 			gm.cw.redraw(board);
-			while (gm.swindow.hasChildNodes()) {
-				gm.swindow.removeChild(gm.swindow.childNodes[0]);
-			}
 			h3.appendChild(document.createTextNode("Game " + obj.id));
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
+			button = document.createElement("button");
+			button.appendChild(document.createTextNode("Pass"));
+			button.addEventListener('click', gm.makeButtonCallback(obj));
+			gm.swindow.appendChild(button);
+		};
+	};
 
-		});
+	this.gameObjToLi = function(obj) {
+		var li = document.createElement("li");
+		li.appendChild(document.createTextNode("game " + obj.id));
+		li.className = this.myTurn(obj) ? "activeTurn" : "inactiveTurn";
+		li.addEventListener('click', this.makeLiCallback(obj));
 
 		return li;
 	};

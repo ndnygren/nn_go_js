@@ -15,14 +15,16 @@ if (isset($_POST["request"])) {
 		die('{"status":"error", "detail":"request type is missing."}');
 	}
 	if ($post_data['type'] == "games") {
+/*
 		if (!isset($post_data['uid']) || $post_data['uid'] != $user_id) {
 			die('{"status":"error", "detail":"User id is not set."}');
 		}
+*/
 		echo '{"status":"success", "detail": ' . json_encode(
 			getGames($user_id)
 		) . '}';
 	}
-	if ($post_data['type'] == "move") {
+	else if ($post_data['type'] == "move") {
 		if (!isset($post_data['id']) || !isset($post_data['l']) || !isset($post_data['r'])) {
 			die('{"status":"error", "detail":"incomplete move request."}');
 		}
@@ -31,6 +33,16 @@ if (isset($_POST["request"])) {
 		}
 		addMove($post_data['id'], $post_data['l'], $post_data['r']);
 		echo '{"status":"success", "detail":"good job."}';
+	} else if ($post_data['type'] == "pass") {
+		if (!isset($post_data['id']) || !isset($post_data['b']) || !isset($post_data['w'])) {
+			die('{"status":"error", "detail":"incomplete pass request."}');
+		}
+		if (!myTurn($post_data['id'], $user_id)) {
+			die('{"status":"error", "detail":"Not your turn."}');
+		}
+		addPass($post_data['id'], $post_data['b'], $post_data['w']);
+	} else {
+		die('{"status":"error", "detail":"Unrecognized type."}');
 	}
 } else {
 	die('{"status":"error", "detail":"no request sent."}');

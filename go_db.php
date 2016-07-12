@@ -73,4 +73,12 @@ function addMove($game_id, $l, $r) {
 	db_query("INSERT INTO go_moves (game_id, l, r) VALUES (". $game_id .",". $l .",". $r .")");
 }
 
+function addPass($game_id, $b, $w) {
+	$result = db_query("SELECT l, r FROM go_moves WHERE game_id = ". $game_id . " ORDER BY move_id DESC");
+	if ($result && $result[0]["l"] == -1) {
+
+	}
+	addMove($game_id, -1, -1);
+}
+
 ?>
