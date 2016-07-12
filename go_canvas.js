@@ -5,7 +5,7 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 	this.gamelist = gamelist;
 	this.swindow = swindow;
 	this.gamedata;
-	this.uid = 1;
+	this.uid = uid;
 	this.current_game = -1;
 
 	this.findById = function(id, arr) {
@@ -80,6 +80,8 @@ function GameManagerInt(canvas, gamelist, swindow, uid) {
 			var ter_score = board.scoreFromMap();
 			var cap_score = board.captureCount();
 			var scoretable = gm.tableFrom2dArray([["","black","white"],
+				["users", obj.bname, obj.wname],
+				["moves", Math.ceil(obj.seq.length/2), Math.floor(obj.seq.length/2)],
 				["territory", ter_score.b, ter_score.w],
 				["capture", cap_score.b, cap_score.w]]);
 
@@ -271,6 +273,7 @@ function CanvasWriter(board, canvas) {
 
 	this.redraw = function(board) {
 		this.board = board;
+		this.color = ((board.seq.length + 1) % 2) + 1;
 		this.data_x_high = this.board.size;
 		this.data_y_high = this.board.size;
 		this.resetScale();
@@ -295,8 +298,7 @@ function CanvasWriter(board, canvas) {
 		if (cw.board.moveValid(x,y,cw.color) && cw.gm.myTurn(cw.gm.findById(cw.gm.current_game, cw.gm.gamedata))) {
 			nb = cw.board.add(x,y,cw.color);
 			if (new GoBoard(nb.size).moveSeqValid(nb.seq)){
-				cw.redraw(cw.board.add(x,y,cw.color));
-				cw.color = cw.color == 2 ? 1 : 2;
+				cw.redraw(nb);
 				console.log(JSON.stringify(cw.board.seq));
 				$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
 				cw.gm && cw.gm.addMove(x,y);

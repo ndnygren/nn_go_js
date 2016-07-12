@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 include '../security/dbconnect.php';
 include 'go_db.php';
 
-$user_id = 1;
+$user_id = $_COOKIE['u_t_index'];
 
 if (isset($_POST["request"])) {
 	$post_data = json_decode($_POST["request"],true);
@@ -29,7 +29,8 @@ if (isset($_POST["request"])) {
 		if (!myTurn($post_data['id'], $user_id)) {
 			die('{"status":"error", "detail":"Not your turn."}');
 		}
-		die('{"status":"success", "detail":"good job."}');
+		addMove($post_data['id'], $post_data['l'], $post_data['r']);
+		echo '{"status":"success", "detail":"good job."}';
 	}
 } else {
 	die('{"status":"error", "detail":"no request sent."}');

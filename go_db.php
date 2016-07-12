@@ -69,4 +69,8 @@ function myTurn($game_id, $user_id) {
 	return false;
 }
 
+function addMove($game_id, $l, $r) {
+	db_query("INSERT INTO go_moves (game_id, l, r) VALUES (". $game_id .",". $l .",". $r .")");
+}
+
 ?>
