@@ -45,7 +45,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 			button.appendChild(document.createTextNode("Challenge"));
 			button.addEventListener('click', function() {
 				var req2 = {"type": "challenge", "id": selec.value, "size": 9};
-				$.post('go_json.php', {request: JSON.stringify(req2)}, function(data) {});
+				$.post('go_json.php', {request: JSON.stringify(req2)}, function(data) { });
 				selec.remove(selec.selectedIndex);
 			});
 			data.detail.map(function(x) {
@@ -60,6 +60,22 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 
 		});
 
+	};
+
+	this.loadGames = function() {
+		var gm = this;
+		var req = {"type":"games", "uid": this.uid};
+		var count = gm.gamedata ? assocFoldr(gm.gamedata.map(function(game) {
+			return gm.myTurn(game) ? 1 : 0;
+		}), function(a,b) {
+			return a+b;
+		}) : 0;
+		if (count < 1) {
+			$.post('go_json.php', {request: JSON.stringify(req)},
+				function(data){
+					gm.addGames(data.detail);
+				});
+		}
 	};
 
 	this.tableFrom2dArray = function(arr1) {
@@ -148,6 +164,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 	this.addGames = function(games) {
 		var gm = this;
 		this.gamedata = games;
+		var g1;
 		var items = games.map(function (x) { return gm.gameObjToLi(x); });
 		while (gm.gamelist.hasChildNodes()) {
 			gm.gamelist.removeChild(gm.gamelist.childNodes[0]);
@@ -155,9 +172,19 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 		items.map(function(li) {
 			gm.gamelist.appendChild(li);
 		});
+		if (gm.current_game != -1) {
+			try {
+				g1 = gm.findById(gm.current_game, gm.gamedata);
+				(gm.makeLiCallback(g1))();
+			} catch(e) {
+			}
+		}
 	};
 
+	var gm = this;
 	this.findChallenges();
+	this.loadGames();
+	setInterval(function(x) { gm.loadGames(); }, 30000);
 }
 
 // Class to act as a wrapper for the HTML5 canvas
