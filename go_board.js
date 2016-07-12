@@ -162,6 +162,7 @@ function GoBoard(size) {
 	};
 
 	this.moveValid = function(i,j, color) {
+		if (i == -1 && j == -1) { return true; }
 		if (i < 0 || i >= this.size) { return false; }
 		if (j < 0 || j >= this.size) { return false; }
 		if (this.get(i,j) !== 0) { return false; }
@@ -190,6 +191,7 @@ function GoBoard(size) {
 		var grp = this.group_map();
 		var g;
 		output.seq = this.seq.concat([[i,j]]);
+		if (i == -1) { return output; }
 		output.data[i][j] = color;
 		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
 		for (k = 0; k < n.length; k++) {
@@ -250,7 +252,10 @@ function GoBoard(size) {
 				return i;
 			}
 			current = current.add(arr[i][0], arr[i][1], ((color+i) % 2) + 1);
-			if (history.has(current)) {
+			if (arr[i][0] != -1 && history.has(current)) {
+				return i;
+			}
+			else if (i > 1 && arr[i-1][0] == -1 && arr[i-2][0] == -1) {
 				return i;
 			}
 			history.set(current,true);

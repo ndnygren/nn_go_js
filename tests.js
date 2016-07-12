@@ -121,4 +121,19 @@ function goTests() {
 		var score = board.captureCount();
 		return score.w == 5 && score.b == 1;
 	});
+	this.tests.push(function() {
+		var board = new GoBoard(5);
+		var seq = [[0,2],[0,0],[-1,-1]];
+		return board.moveSeqValid(seq);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(5);
+		var seq = [[0,2],[0,0],[-1,-1],[-1,-1]];
+		return board.moveSeqValid(seq);
+	});
+	this.tests.push(function() {
+		var board = new GoBoard(5);
+		var seq = [[0,2],[0,0],[-1,-1],[-1,-1],[1,1]];
+		return !board.moveSeqValid(seq);
+	});
 }

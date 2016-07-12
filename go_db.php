@@ -70,13 +70,17 @@ function myTurn($game_id, $user_id) {
 }
 
 function addMove($game_id, $l, $r) {
-	db_query("INSERT INTO go_moves (game_id, l, r) VALUES (". $game_id .",". $l .",". $r .")");
+	db_update("INSERT INTO go_moves (game_id, l, r) VALUES (". $game_id .",". $l .",". $r .")");
 }
 
 function addPass($game_id, $b, $w) {
 	$result = db_query("SELECT l, r FROM go_moves WHERE game_id = ". $game_id . " ORDER BY move_id DESC");
+	$status = $b > $w ? "B" : "W";
 	if ($result && $result[0]["l"] == -1) {
-
+		db_update("UPDATE go_header SET status='" . $status
+			."', b_score='". $b
+			."', w_score='" . $w . "' "
+			." WHERE game_id='".$game_id."'");
 	}
 	addMove($game_id, -1, -1);
 }

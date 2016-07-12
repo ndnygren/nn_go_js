@@ -41,6 +41,7 @@ if (isset($_POST["request"])) {
 			die('{"status":"error", "detail":"Not your turn."}');
 		}
 		addPass($post_data['id'], $post_data['b'], $post_data['w']);
+		echo '{"status":"success", "detail":"good job."}';
 	} else {
 		die('{"status":"error", "detail":"Unrecognized type."}');
 	}
