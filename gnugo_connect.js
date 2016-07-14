@@ -27,11 +27,13 @@ function breakOnDelim(input, delim) {
 
 function locToAlphaNum(loc) {
 	if (loc[0] == -1) { return "pass"; }
-	return String.fromCharCode(65 + loc[0])+(loc[1]+1);
+	var left = String.fromCharCode(65 + (loc[0] >= 8 ? loc[0] + 1: loc[0]));
+	return left+(loc[1]+1);
 }
 
 function alphaNumToLoc(alpha) {
 	var first = alpha.toLowerCase().charCodeAt(0) - 97;
+	if (first >= 8) { first--; }
 	if (alpha == "PASS") { return {"l": -1, "r": -1}; }
 	return {"l": first, "r": parseInt(alpha.slice(1)) - 1};
 }
@@ -62,7 +64,7 @@ function findAndSendMove(obj) {
 	var req = {"type": "move", "uid": user_id};
 	var loc;
 	fs.writeFile("movefile"+obj.id+".txt", adaptSeqToGTP(obj), function(err) {
-		exec("gnugo --mode gtp < movefile"+obj.id+".txt", function (error, stdout, stderr) {
+		exec("gnugo --mode gtp --capture-all-dead < movefile"+obj.id+".txt", function (error, stdout, stderr) {
 			var parts = breakOnDelim(stdout, "=");
 			parts = parts.map(function (x) {
 				return x.replace(/^[ \r\n]+/, "").replace(/[ \r\n]+$/, "");
