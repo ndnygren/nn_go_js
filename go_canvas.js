@@ -305,6 +305,21 @@ function CanvasWriter(board, canvas) {
 		context.stroke();
 	};
 
+	this.drawCross = function(x,y,r,color) {
+		var context = this.canvas.getContext('2d');
+
+		context.beginPath();
+		context.moveTo(x, y);
+		context.lineTo(x + r, y + r);
+		context.lineWidth = 3;
+		context.strokeStyle = "black";
+		context.stroke();
+		context.lineWidth = 2;
+		context.strokeStyle = "yellow";
+		context.stroke();
+
+	};
+
 	// direct canvas interaction, creates a line
 	this.drawLine_uns = function(x1,y1,x2,y2,color,width) {
 		var context = this.canvas.getContext('2d');
@@ -359,6 +374,13 @@ function CanvasWriter(board, canvas) {
 					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), 15, "black", "gray");
 				}
 			}
+		}
+		if (this.board.seq.length > 0) {
+			last_point = this.board.seq[this.board.seq.length - 1];
+			if (last_point[0] > -1) {
+				this.drawCross(this.scaleX(last_point[0]),this.scaleY(last_point[1]), 15, "white", "gray");
+			}
+
 		}
 	};
 
