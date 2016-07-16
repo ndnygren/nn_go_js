@@ -32,15 +32,7 @@ function addChallenge($aid, $bid, $size) {
 	return db_update("INSERT INTO go_header (white_user, black_user, size) VALUES (".$w.",".$b.",".$size.")");
 }
 
-function getGames($usr_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r "
-		." FROM users AS B, users AS W, go_header "
-		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
-		." WHERE B.id=black_user "
-		." AND W.id=white_user "
-		." AND (W.id= " . $usr_id . " || B.id=" . $usr_id . " )"
-		." AND status IS NULL"
-		." ORDER BY go_header.game_id, move_id ");
+function resToGameObj($result) {
 	$prev = -1;
 	$output = Array();
 	$temp = null;
@@ -61,6 +53,33 @@ function getGames($usr_id) {
 	}
 
 	return $output;
+}
+
+function getGame($game_id) {
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r "
+		." FROM users AS B, users AS W, go_header "
+		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
+		." WHERE B.id=black_user "
+		." AND W.id=white_user "
+		." AND go_header.game_id=" . $game_id
+		." AND status IS NULL"
+		." ORDER BY go_header.game_id, move_id ");
+	if (count($result) > 0) {
+		return resToGameObj($result)[0];
+	}
+	die('{"status":"error", "detail":"no game '.$game_id.' found"}');
+}
+
+function getGames($usr_id) {
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r "
+		." FROM users AS B, users AS W, go_header "
+		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
+		." WHERE B.id=black_user "
+		." AND W.id=white_user "
+		." AND (W.id= " . $usr_id . " || B.id=" . $usr_id . " )"
+		." AND status IS NULL"
+		." ORDER BY go_header.game_id, move_id ");
+	return resToGameObj($result);
 }
 
 function myTurn($game_id, $user_id) {

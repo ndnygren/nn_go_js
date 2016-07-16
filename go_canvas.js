@@ -422,15 +422,13 @@ function CanvasWriter(board, canvas) {
 
 }
 
-function HistoryManager(hwindow, obj) {
+function HistoryManager(hwindow, game_id) {
 	this.hwindow=hwindow;
 	this.cw;
-	this.obj = obj;
-	this.move = obj.seq.length;
 
 	this.makeCanvas = function() {
 		var hm = this;
-		var board = new GoBoard(this.obj.size).addSeq(this.obj.seq);
+		var board = new GoBoard(5);
 		var ldiv = document.createElement("div");
 		var rdiv = document.createElement("div");
 		this.tablediv = document.createElement("div");
@@ -452,7 +450,6 @@ function HistoryManager(hwindow, obj) {
 		this.hwindow.appendChild(ldiv);
 		this.hwindow.appendChild(rdiv);
 		this.cw = new CanvasWriter(board, canvas);
-		this.setMove(this.move);
 	};
 
 	this.setMove = function(i) {
@@ -484,5 +481,11 @@ function HistoryManager(hwindow, obj) {
 	};
 
 	this.makeCanvas();
+	var hm = this;
+	var req = {"type": "game", "id" : game_id };
+	$.post('go_json.php', {request: JSON.stringify(req)}, function(data){
+		hm.obj = data.detail;
+		hm.setMove(hm.obj.seq.length);
+	});
 }
 

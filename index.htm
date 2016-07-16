@@ -45,7 +45,7 @@
 			if (!isNaN(input_text)) {
 				localStorage.setItem("go_u_id", input_text);
 			}
-			var hm = new HistoryManager(document.getElementById("test_div"), board);
+			var hm = new HistoryManager(document.getElementById("test_div"), 12);
 			return false;
 		}
 		document.getElementById("test_div").innerHTML = gt.runTests();

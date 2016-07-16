@@ -5,9 +5,7 @@ include 'security/dbconnect.php';
 include 'security/sessioncheckhead.php';
 include 'go_db.php';
 
-if (!checkBadge()) {
-	die('{"status":"error", "detail":"faile authentication."}');
-}
+$TGILI = checkBadge();
 
 $user_id = $_COOKIE['u_t_index'];
 
@@ -19,7 +17,14 @@ if (isset($_POST["request"])) {
 	if (!isset($post_data['type'])) {
 		die('{"status":"error", "detail":"request type is missing."}');
 	}
-	if ($post_data['type'] == "games") {
+	if ($post_data['type'] == "game") {
+		if (!isset($post_data['id'])) {
+			die('{"status":"error", "detail":"incomplete game request."}');
+		}
+		echo '{"status":"success", "detail": ' . json_encode(
+			getGame($post_data['id'])
+		) . '}';
+	} else if ($post_data['type'] == "games") {
 /*
 		if (!isset($post_data['uid']) || $post_data['uid'] != $user_id) {
 			die('{"status":"error", "detail":"User id is not set."}');
@@ -30,6 +35,7 @@ if (isset($_POST["request"])) {
 		) . '}';
 	}
 	else if ($post_data['type'] == "move") {
+		if (!$TGILI) { die('{"status":"error", "detail":"faile authentication."}'); }
 		if (!isset($post_data['id']) || !isset($post_data['l']) || !isset($post_data['r'])) {
 			die('{"status":"error", "detail":"incomplete move request."}');
 		}
@@ -39,6 +45,7 @@ if (isset($_POST["request"])) {
 		addMove($post_data['id'], $post_data['l'], $post_data['r']);
 		echo '{"status":"success", "detail":"good job."}';
 	} else if ($post_data['type'] == "pass") {
+		if (!$TGILI) { die('{"status":"error", "detail":"faile authentication."}'); }
 		if (!isset($post_data['id']) || !isset($post_data['b']) || !isset($post_data['w'])) {
 			die('{"status":"error", "detail":"incomplete pass request."}');
 		}
@@ -51,6 +58,7 @@ if (isset($_POST["request"])) {
 		echo '{"status":"success", "detail":' . json_encode(getChallenges($user_id)) . '}';
 
 	} else if ($post_data['type'] == "challenge") {
+		if (!$TGILI) { die('{"status":"error", "detail":"faile authentication."}'); }
 		if (!isset($post_data['id']) || !isset($post_data['size'])) {
 			die('{"status":"error", "detail":"incomplete challenge request."}');
 		}
