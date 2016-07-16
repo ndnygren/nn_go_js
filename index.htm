@@ -37,17 +37,15 @@
 	</body>
 	<script type="text/javascript">
 		var user_id = parseInt(localStorage.getItem("go_u_id"));
-		var board = new GoBoard(9);
 		var gt = new goTests();
 		var gm = new GameManagerInt(document.getElementById("drawing_window"), document.getElementById("game_ul"), document.getElementById("status_window"), document.getElementById("challenge_window"), user_id);
 		function loadInput() {
 			var input_text = document.getElementById("input_box").value;
+			var board = new GoBoard(9).addSeq(JSON.parse(input_text));
 			if (!isNaN(input_text)) {
 				localStorage.setItem("go_u_id", input_text);
 			}
-			var moves = JSON.parse(input_text);
-			board = board.addSeq(moves);
-			//var cw = new CanvasWriter(board, document.getElementById("drawing_window"));
+			var hm = new HistoryManager(document.getElementById("test_div"), board);
 			return false;
 		}
 		document.getElementById("test_div").innerHTML = gt.runTests();

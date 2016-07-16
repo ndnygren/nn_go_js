@@ -14,10 +14,43 @@
 *
 */
 
+function GoHTML () {
+	this.emptyObj = function(elem) {
+		while (elem.hasChildNodes()) {
+			elem.removeChild(elem.childNodes[0]);
+		}
+	};
+
+	this.tableFrom2dArray = function(arr1) {
+		var output = document.createElement("table");
+		var topheader = document.createElement("tr");
+		if (arr1.length === 0) { return output; }
+		arr1[0].map( function(cell) {
+			var th = document.createElement("th");
+			th.appendChild(document.createTextNode(cell));
+			topheader.appendChild(th);
+		});
+		output.appendChild(topheader);
+		arr1.slice(1).map(function(row) {
+			var tr = document.createElement("tr");
+			var th = document.createElement("th");
+			th.appendChild(document.createTextNode(row[0]));
+			tr.appendChild(th);
+			row.slice(1).map(function(cell){
+				var td = document.createElement("td");
+				td.appendChild(document.createTextNode(cell));
+				tr.appendChild(td);
+			});
+			output.appendChild(tr);
+
+		});
+
+		return output;
+	};
+}
 
 function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 	this.cw = new CanvasWriter(new GoBoard(5), canvas);
-	this.cw.gm = this;
 	this.gamelist = gamelist;
 	this.swindow = swindow;
 	this.cwindow = cwindow;
@@ -94,33 +127,6 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 		}
 	};
 
-	this.tableFrom2dArray = function(arr1) {
-		var output = document.createElement("table");
-		var topheader = document.createElement("tr");
-		if (arr1.length === 0) { return output; }
-		arr1[0].map( function(cell) {
-			var th = document.createElement("th");
-			th.appendChild(document.createTextNode(cell));
-			topheader.appendChild(th);
-		});
-		output.appendChild(topheader);
-		arr1.slice(1).map(function(row) {
-			var tr = document.createElement("tr");
-			var th = document.createElement("th");
-			th.appendChild(document.createTextNode(row[0]));
-			tr.appendChild(th);
-			row.slice(1).map(function(cell){
-				var td = document.createElement("td");
-				td.appendChild(document.createTextNode(cell));
-				tr.appendChild(td);
-			});
-			output.appendChild(tr);
-
-		});
-
-		return output;
-	};
-
 	this.makeButtonCallback = function (obj) {
 		var gm = this;
 		var board = new GoBoard(obj.size).addSeq(obj.seq);
@@ -137,9 +143,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 		var gm = this;
 		var button;
 		return function() {
-			while (gm.swindow.hasChildNodes()) {
-				gm.swindow.removeChild(gm.swindow.childNodes[0]);
-			}
+			new GoHTML().emptyObj(gm.swindow);
 			var board = new GoBoard(obj.size);
 			var h3 = document.createElement("h3");
 			if (board.moveSeqValid(obj.seq,2)) {
@@ -150,7 +154,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 			}
 			var ter_score = board.scoreFromMap();
 			var cap_score = board.captureCount();
-			var scoretable = gm.tableFrom2dArray([["","black","white"],
+			var scoretable = new GoHTML().tableFrom2dArray([["","black","white"],
 				["users", obj.bname, obj.wname],
 				["moves", Math.ceil(obj.seq.length/2), Math.floor(obj.seq.length/2)],
 				["territory", ter_score.b, ter_score.w],
@@ -201,6 +205,23 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 	this.findChallenges();
 	this.loadGames();
 	setInterval(function(x) { gm.loadGames(); }, 30000);
+
+	gm.cw.canvas.addEventListener('click', function(e) {
+		var nb;
+		var rect = canvas.getBoundingClientRect();
+		var x = Math.floor(gm.cw.scaleXRev(e.clientX - rect.left)+0.5);
+		var y = Math.floor(gm.cw.scaleYRev(e.clientY - rect.top)+0.5);
+		var req = {"type": "move", "id": gm.current_game, "l":x, "r": y };
+		if (gm.cw.board.moveValid(x,y,gm.cw.color) && gm.myTurn(gm.findById(gm.current_game, gm.gamedata))) {
+			nb = gm.cw.board.add(x,y, gm.cw.color);
+			if (new GoBoard(nb.size).moveSeqValid(nb.seq)){
+				gm.cw.redraw(nb);
+				//console.log(JSON.stringify(cw.board.seq));
+				$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
+				gm.addMove(x,y);
+			}
+		}
+	});
 }
 
 // Class to act as a wrapper for the HTML5 canvas
@@ -399,24 +420,69 @@ function CanvasWriter(board, canvas) {
 	this.drawLines();
 	this.drawPieces();
 
+}
 
-	var cw = this;
+function HistoryManager(hwindow, obj) {
+	this.hwindow=hwindow;
+	this.cw;
+	this.obj = obj;
+	this.move = obj.seq.length;
 
-	this.canvas.addEventListener('click', function(e) {
-		var nb;
-		var rect = canvas.getBoundingClientRect();
-		var x = Math.floor(cw.scaleXRev(e.clientX - rect.left)+0.5);
-		var y = Math.floor(cw.scaleYRev(e.clientY - rect.top)+0.5);
-		var req = {"type": "move", "id": cw.gm.current_game, "l":x, "r": y };
-		if (cw.board.moveValid(x,y,cw.color) && cw.gm.myTurn(cw.gm.findById(cw.gm.current_game, cw.gm.gamedata))) {
-			nb = cw.board.add(x,y,cw.color);
-			if (new GoBoard(nb.size).moveSeqValid(nb.seq)){
-				cw.redraw(nb);
-				//console.log(JSON.stringify(cw.board.seq));
-				$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
-				cw.gm && cw.gm.addMove(x,y);
-			}
+	this.makeCanvas = function() {
+		var hm = this;
+		var board = new GoBoard(this.obj.size).addSeq(this.obj.seq);
+		var ldiv = document.createElement("div");
+		var rdiv = document.createElement("div");
+		this.tablediv = document.createElement("div");
+		var canvas = document.createElement("canvas");
+		var bl = document.createElement("button");
+		var br = document.createElement("button");
+		bl.appendChild(document.createTextNode("< Back"));
+		br.appendChild(document.createTextNode("Forward >"));
+		bl.addEventListener('click', function() { hm.decMove() });
+		br.addEventListener('click', function() { hm.incMove() });
+		ldiv.className = "inner_div";
+		rdiv.className = "inner_div";
+		canvas.width = 500;
+		canvas.height = 500;
+		ldiv.appendChild(canvas);
+		rdiv.appendChild(bl);
+		rdiv.appendChild(br);
+		rdiv.appendChild(this.tablediv);
+		this.hwindow.appendChild(ldiv);
+		this.hwindow.appendChild(rdiv);
+		this.cw = new CanvasWriter(board, canvas);
+		this.setMove(this.move);
+	};
+
+	this.setMove = function(i) {
+		var board = new GoBoard(this.obj.size).addSeq(this.obj.seq.slice(0,i));
+		var ter_score = board.scoreFromMap();
+		var cap_score = board.captureCount();
+		var scoretable = new GoHTML().tableFrom2dArray([
+				["","black","white"],
+				["users", this.obj.bname, this.obj.wname],
+				["moves", Math.ceil(board.seq.length/2), Math.floor(board.seq.length/2)],
+				["territory", ter_score.b, ter_score.w],
+				["capture", cap_score.b, cap_score.w]]);
+		new GoHTML().emptyObj(this.tablediv);
+		this.tablediv.appendChild(scoretable);
+		this.cw.redraw(board);
+		this.move = i;
+	};
+
+	this.incMove = function() {
+		if (this.move < this.obj.seq.length) {
+			this.setMove(this.move + 1);
 		}
-	});
+	};
+
+	this.decMove = function() {
+		if (this.move > 0) {
+			this.setMove(this.move - 1);
+		}
+	};
+
+	this.makeCanvas();
 }
 
