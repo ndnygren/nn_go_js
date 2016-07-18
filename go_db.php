@@ -62,7 +62,6 @@ function getGame($game_id) {
 		." WHERE B.id=black_user "
 		." AND W.id=white_user "
 		." AND go_header.game_id=" . $game_id
-		." AND status IS NULL"
 		." ORDER BY go_header.game_id, move_id ");
 	if (count($result) > 0) {
 		return resToGameObj($result)[0];

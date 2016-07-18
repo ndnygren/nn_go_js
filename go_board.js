@@ -113,6 +113,7 @@ function GoBoard(size) {
 	this.size = size;
 	this.seq = [];
 	this.data = [];
+	this.letters = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T','U','V','W'];
 
 	for (var i = 0; i < size; i++) {
 		this.data.push([]);

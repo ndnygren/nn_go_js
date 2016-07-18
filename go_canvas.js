@@ -387,12 +387,13 @@ function CanvasWriter(board, canvas) {
 	};
 
 	this.drawPieces = function () {
+		var radius = Math.abs(this.scaleX(1) - this.scaleX(0))/2.3;
 		for (var i = 0; i < this.board.size; i++) {
 			for (var j = 0; j < this.board.size; j++) {
 				if (this.board.get(i,j) == 1) {
-					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), 15, "white", "gray");
+					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), radius, "white", "gray");
 				} else if (this.board.get(i,j) == 2) {
-					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), 15, "black", "gray");
+					this.drawCircle_uns(this.scaleX(i),this.scaleY(j), radius, "black", "gray");
 				}
 			}
 		}
@@ -405,15 +406,30 @@ function CanvasWriter(board, canvas) {
 		}
 	};
 
+	this.addLettering = function() {
+		var context = this.canvas.getContext("2d");
+		context.font = "15px monospace";
+		context.textBaseline = "middle";
+		context.textAlign = "center";
+		context.fillStyle="black";
+		for (var i = 0; i < this.board.size; i++) {
+			context.fillText(this.board.letters[i], this.scaleX(i), this.scaleY(-0.5));
+			context.fillText(this.board.letters[i], this.scaleX(i), this.scaleY(this.board.size - 0.5));
+			context.fillText(i, this.scaleX(-0.5), this.scaleY(i));
+			context.fillText(i, this.scaleX(this.board.size-0.5), this.scaleY(i));
+		}
+	}
+
 	this.redraw = function(board) {
 		this.board = board;
 		this.color = ((board.seq.length + 1) % 2) + 1;
-		this.data_x_high = this.board.size;
-		this.data_y_high = this.board.size;
+		this.data_x_high = this.board.size - 1;
+		this.data_y_high = this.board.size - 1;
 		this.resetScale();
 		this.reset();
 		this.drawLines();
 		this.drawPieces();
+		this.addLettering();
 	};
 
 	this.resetScale();
@@ -441,8 +457,8 @@ function HistoryManager(hwindow, game_id) {
 		br.addEventListener('click', function() { hm.incMove() });
 		ldiv.className = "inner_div";
 		rdiv.className = "inner_div";
-		canvas.width = 500;
-		canvas.height = 500;
+		canvas.width = 400;
+		canvas.height = 400;
 		ldiv.appendChild(canvas);
 		rdiv.appendChild(bl);
 		rdiv.appendChild(br);
