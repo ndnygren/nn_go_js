@@ -408,15 +408,16 @@ function CanvasWriter(board, canvas) {
 
 	this.addLettering = function() {
 		var context = this.canvas.getContext("2d");
+		var offedge = 8;
 		context.font = "15px monospace";
 		context.textBaseline = "middle";
 		context.textAlign = "center";
 		context.fillStyle="black";
 		for (var i = 0; i < this.board.size; i++) {
-			context.fillText(this.board.letters[i], this.scaleX(i), this.scaleY(-0.5));
-			context.fillText(this.board.letters[i], this.scaleX(i), this.scaleY(this.board.size - 0.5));
-			context.fillText(i, this.scaleX(-0.5), this.scaleY(i));
-			context.fillText(i, this.scaleX(this.board.size-0.5), this.scaleY(i));
+			context.fillText(this.board.letters[i], this.scaleX(i), offedge);
+			context.fillText(this.board.letters[i], this.scaleX(i), this.canvas.height - offedge);
+			context.fillText(i+1, offedge, this.scaleY(i));
+			context.fillText(i+1, this.canvas.width - offedge, this.scaleY(i));
 		}
 	}
 
@@ -441,16 +442,21 @@ function CanvasWriter(board, canvas) {
 function HistoryManager(hwindow, game_id) {
 	this.hwindow=hwindow;
 	this.cw;
+	this.game_id = game_id;
 
 	this.makeCanvas = function() {
 		var hm = this;
 		var board = new GoBoard(5);
+		var h3 = document.createElement("h3");
+		var timebox = document.createElement("div");
+		this.timespan = document.createElement("i");
 		var ldiv = document.createElement("div");
 		var rdiv = document.createElement("div");
 		this.tablediv = document.createElement("div");
 		var canvas = document.createElement("canvas");
 		var bl = document.createElement("button");
 		var br = document.createElement("button");
+		h3.appendChild(document.createTextNode("Game " + this.game_id));
 		bl.appendChild(document.createTextNode("< Back"));
 		br.appendChild(document.createTextNode("Forward >"));
 		bl.addEventListener('click', function() { hm.decMove() });
@@ -459,7 +465,10 @@ function HistoryManager(hwindow, game_id) {
 		rdiv.className = "inner_div";
 		canvas.width = 400;
 		canvas.height = 400;
+		timebox.appendChild(this.timespan);
 		ldiv.appendChild(canvas);
+		rdiv.appendChild(h3);
+		rdiv.appendChild(timebox);
 		rdiv.appendChild(bl);
 		rdiv.appendChild(br);
 		rdiv.appendChild(this.tablediv);
@@ -470,6 +479,7 @@ function HistoryManager(hwindow, game_id) {
 
 	this.setMove = function(i) {
 		var board = new GoBoard(this.obj.size).addSeq(this.obj.seq.slice(0,i));
+		var last = i > 0 ? this.obj.seq[i-1] : [-2,-1, "Never"];
 		var ter_score = board.scoreFromMap();
 		var cap_score = board.captureCount();
 		var scoretable = new GoHTML().tableFrom2dArray([
@@ -480,6 +490,8 @@ function HistoryManager(hwindow, game_id) {
 				["capture", cap_score.b, cap_score.w]]);
 		new GoHTML().emptyObj(this.tablediv);
 		this.tablediv.appendChild(scoretable);
+		new GoHTML().emptyObj(this.timespan);
+		this.timespan.appendChild(document.createTextNode(last[2]));
 		this.cw.redraw(board);
 		this.move = i;
 	};

@@ -45,7 +45,7 @@ function resToGameObj($result) {
 			$prev = $row["game_id"];
 		}
 		if ($row["move_id"] != null) {
-			$temp->seq[] = Array(intval($row["l"]),intval($row["r"]));
+			$temp->seq[] = Array(intval($row["l"]),intval($row["r"]), $row["created"]);
 		}
 	}
 	if ($temp != null) {
@@ -56,7 +56,7 @@ function resToGameObj($result) {
 }
 
 function getGame($game_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r "
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created"
 		." FROM users AS B, users AS W, go_header "
 		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
 		." WHERE B.id=black_user "
@@ -70,7 +70,7 @@ function getGame($game_id) {
 }
 
 function getGames($usr_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r "
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created "
 		." FROM users AS B, users AS W, go_header "
 		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
 		." WHERE B.id=black_user "
