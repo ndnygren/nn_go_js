@@ -8,8 +8,12 @@ var host = "192.168.1.32";
 var url = "/nn_go_js/go_json.php";
 var user_id = 2;
 var session_id = 78521752;
+var mistake = 0.81;
+var delay = 3000;
 var go_board_data = fs.readFileSync('./go_board.js','utf8');
 eval(go_board_data);
+
+console.log("starting player " + user_id);
 
 function breakOnDelim(input, delim) {
 	var output = [];
@@ -60,11 +64,44 @@ function makePassReq(obj) {
 	return req;
 }
 
+function addNoise(loc, obj, mistake) {
+	var board = new GoBoard(obj.size).addSeq(obj.seq);
+	var color = 2 - (board.seq.length % 2);
+	var cand = {"l": loc.l + 1, "r": loc.r }, count = 0, limit = 10;
+	if (Math.random() > mistake) { return loc; }
+	cand = {"l": loc.l + 1, "r": loc.r };
+	if (board.moveValid(cand.l, cand.r, color)) { return cand; }
+	cand = {"l": loc.l - 1, "r": loc.r };
+	if (board.moveValid(cand.l, cand.r, color)) { return cand; }
+	cand = {"l": loc.l, "r": loc.r + 1 };
+	if (board.moveValid(cand.l, cand.r, color)) { return cand; }
+	cand = {"l": loc.l, "r": loc.r - 1 };
+	if (board.moveValid(cand.l, cand.r, color)) { return cand; }
+
+	while (count < limit) {
+		cand = {"l": Math.floor(Math.random()*obj.size), "r": Math.floor(Math.random()*obj.size) };
+		if (board.moveValid(cand.l, cand.r, color)){ return cand; }
+	}
+	return {"l":-1, "r":-1};
+}
+
 function findAndSendMove(obj) {
 	var req = {"type": "move", "uid": user_id};
 	var loc;
+	var board = new GoBoard(obj.size).addSeq(obj.seq);
+	var ter_score = board.scoreFromMap();
+	var cap_score = board.captureCount();
+	var bs = ter_score.b+cap_score.b;
+	var ws = ter_score.w+cap_score.w;
+	if (obj.seq.length > 0 && obj.seq[obj.seq.length -1][0] == -1) {
+		if ((obj.seq.length % 2 == 0 && bs > ws) || (obj.seq.length % 2 == 1 && bs < ws)) {
+			req = makePassReq(obj);
+			doPost(host, url, user_id, session_id, req, function (data) {});
+			return;
+		}
+	}
 	fs.writeFile("movefile"+obj.id+".txt", adaptSeqToGTP(obj), function(err) {
-		exec("gnugo --mode gtp --capture-all-dead < movefile"+obj.id+".txt", function (error, stdout, stderr) {
+		exec("gnugo  --level 1 --mode gtp --capture-all-dead < movefile"+obj.id+".txt", function (error, stdout, stderr) {
 			var parts = breakOnDelim(stdout, "=");
 			parts = parts.map(function (x) {
 				return x.replace(/^[ \r\n]+/, "").replace(/[ \r\n]+$/, "");
@@ -74,7 +111,7 @@ function findAndSendMove(obj) {
 			if (parts.length != 1) {
 				throw("An error occured: " + JSON.stringify(parts));
 			}
-			loc = alphaNumToLoc(parts[0]);
+			loc = addNoise(alphaNumToLoc(parts[0]), obj, mistake);
 			console.log(obj.id + ": " + JSON.stringify(loc));
 			req.id = obj.id;
 			req.l = loc.l;
@@ -94,7 +131,13 @@ function myTurn(obj, user_id) {
 function getGames(host, url, user_id, session_id) {
 	var req = {"type": "games", "uid": user_id};
 	doPost(host, url, user_id, session_id, req, function (data) {
-		var obj = JSON.parse(data);
+		var obj;
+		try {
+			obj = JSON.parse(data);
+		} catch (e) {
+			console.log("could not parse data: " + data);
+			return;
+		}
 		var list = obj.detail;
 		for (var i = 0; i < list.length; i++) {
 			if (myTurn(list[i],user_id)) {
@@ -118,8 +161,10 @@ function doPost(host, url, user_id, session_id, req, callback) {
 		}
 	};
 	var req = http.request(options, function(res) {
+		var buffer = "";
 		res.setEncoding('utf8');
-		res.on('data', callback);
+		res.on('data', function (data) { buffer += data;});
+		res.on('end', function (data) { callback(buffer); });
 	});
 	req.write(qs);
 	req.on('error', function(e) {
@@ -130,5 +175,5 @@ function doPost(host, url, user_id, session_id, req, callback) {
 
 setInterval(function (x) {
 	getGames(host, url, user_id, session_id);
-}, 3000);
+}, delay);
 
