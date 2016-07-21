@@ -69,6 +69,22 @@ function getGame($game_id) {
 	die('{"status":"error", "detail":"no game '.$game_id.' found"}');
 }
 
+function getChat($game_ids) {
+	$glist = [];
+	foreach ($game_ids as $game_id) {
+		if (!is_int($game_id)) {
+			die('{"status":"error", "detail":"this '.$game_id.' is not an int."}');
+		}
+		$glist[] = "Go".$game_id;
+	}
+
+	$result = db_query("SELECT cat_id, topic_id, topic_subject, post_id, post_content, post_date, post_by, username "
+		." FROM forum_categories, forum_topics, forum_posts, users "
+		." WHERE cat_id=topic_cat AND topic_id=post_topic AND post_by=users.id AND cat_name='Go'".
+		" AND topic_subject IN ('" . join("','",$glist) . "')");
+	return $result;
+}
+
 function getGames($usr_id) {
 	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created "
 		." FROM users AS B, users AS W, go_header "

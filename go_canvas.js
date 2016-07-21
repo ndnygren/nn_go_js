@@ -49,11 +49,12 @@ function GoHTML () {
 	};
 }
 
-function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
+function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.cw = new CanvasWriter(new GoBoard(5), canvas);
 	this.gamelist = gamelist;
 	this.swindow = swindow;
 	this.cwindow = cwindow;
+	this.twindow = twindow;
 	this.gamedata;
 	this.uid = uid;
 	this.current_game = -1;
@@ -122,7 +123,11 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, uid) {
 		if (count < 1) {
 			$.post('go_json.php', {request: JSON.stringify(req)},
 				function(data){
+					var idlist = data.detail.map(function(x) { return parseInt(x.id); });
+					var req1 = {"type":"chat", "games": idlist };
+					$.post('go_json.php', {request: JSON.stringify(req1)}, function(data) { gm.twindow.innerHTML = JSON.stringify(data); });
 					gm.addGames(data.detail);
+
 				});
 		}
 	};

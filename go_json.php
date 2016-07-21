@@ -64,6 +64,11 @@ if (isset($_POST["request"])) {
 		}
 		addChallenge($post_data['id'], $user_id, $post_data['size']);
 		echo '{"status":"success", "detail":"good job."}';
+	} else if ($post_data['type'] == "chat") {
+		if (!isset($post_data['games'])) {
+			die('{"status":"error", "detail":"incomplete chat request."}');
+		}
+		echo '{"status":"success", "detail":' . json_encode(getChat($post_data['games'])) . '}';
 	} else {
 		die('{"status":"error", "detail":"Unrecognized type."}');
 	}

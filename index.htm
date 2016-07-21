@@ -31,6 +31,7 @@
 					<div id="challenge_window"></div>
 					<ul id="game_ul"></ul>
 					<div id="status_window"></div>
+					<div id="talk_window"></div>
 				</div>
 		</div>
 		<div id="test_div" class="outer_div"></div>
@@ -38,7 +39,7 @@
 	<script type="text/javascript">
 		var user_id = parseInt(localStorage.getItem("go_u_id"));
 		var gt = new goTests();
-		var gm = new GameManagerInt(document.getElementById("drawing_window"), document.getElementById("game_ul"), document.getElementById("status_window"), document.getElementById("challenge_window"), user_id);
+		var gm = new GameManagerInt(document.getElementById("drawing_window"), document.getElementById("game_ul"), document.getElementById("status_window"), document.getElementById("challenge_window"), document.getElementById("talk_window"), user_id);
 		function loadInput() {
 			var input_text = document.getElementById("input_box").value;
 			var board = new GoBoard(9).addSeq(JSON.parse(input_text));
