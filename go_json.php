@@ -69,6 +69,13 @@ if (isset($_POST["request"])) {
 			die('{"status":"error", "detail":"incomplete chat request."}');
 		}
 		echo '{"status":"success", "detail":' . json_encode(getChat($post_data['games'])) . '}';
+	} else if ($post_data['type'] == "chatpost") {
+		if (!$TGILI) { die('{"status":"error", "detail":"faile authentication."}'); }
+		if (!isset($post_data['game']) || !isset($post_data['content'])) {
+			die('{"status":"error", "detail":"incomplete chat post."}');
+		}
+		postChat($user_id, $post_data['game'], $post_data['content']);
+		echo '{"status":"success", "detail":"good job."}';
 	} else {
 		die('{"status":"error", "detail":"Unrecognized type."}');
 	}

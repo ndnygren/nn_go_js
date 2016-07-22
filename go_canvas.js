@@ -54,7 +54,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.gamelist = gamelist;
 	this.swindow = swindow;
 	this.cwindow = cwindow;
-	this.twindow = twindow;
+	this.tm = new TalkManager(twindow);
 	this.gamedata;
 	this.uid = uid;
 	this.current_game = -1;
@@ -123,11 +123,8 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		if (count < 1) {
 			$.post('go_json.php', {request: JSON.stringify(req)},
 				function(data){
-					var idlist = data.detail.map(function(x) { return parseInt(x.id); });
-					var req1 = {"type":"chat", "games": idlist };
-					$.post('go_json.php', {request: JSON.stringify(req1)}, function(data) { gm.twindow.innerHTML = JSON.stringify(data); });
 					gm.addGames(data.detail);
-
+					gm.tm.loadChat(data.detail);
 				});
 		}
 	};
@@ -166,6 +163,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 				["capture", cap_score.b, cap_score.w]]);
 
 			gm.current_game = obj.id;
+			gm.tm.buildChatBox(gm.current_game);
 			gm.cw.redraw(board);
 			h3.appendChild(document.createTextNode("Game " + obj.id));
 			gm.swindow.appendChild(h3);
@@ -520,5 +518,50 @@ function HistoryManager(hwindow, game_id) {
 		hm.obj = data.detail;
 		hm.setMove(hm.obj.seq.length);
 	});
+}
+
+function TalkManager (twindow) {
+	this.twindow = twindow;
+	this.data;
+
+	this.makePostCallback = function(id, textarea) {
+		var tm = this;
+		return function () {
+			var req = {"type":"chatpost", "game": parseInt(id), "content": textarea.value };
+			$.post('go_json.php', {request: JSON.stringify(req)},
+					function () {
+						textarea.value = "";
+					}
+			      );
+		};
+	}
+
+	this.buildChatBox = function (id) {
+		var tm = this;
+		new GoHTML().emptyObj(this.twindow);
+		var ta = document.createElement("textarea");
+		var button = document.createElement("button");
+		button.appendChild(document.createTextNode("Post"));
+		button.addEventListener('click', tm.makePostCallback(id,ta));
+		ta.style = "width:200px";
+		button.style = "width:200px";
+		this.twindow.appendChild(ta);
+		this.twindow.appendChild(button);
+		this.twindow.appendChild(document.createTextNode(JSON.stringify(this.data)));
+	};
+
+	this.addChatData = function(data) {
+		this.data = data;
+	};
+
+	this.loadChat = function(gamedata) {
+		var tm = this;
+		var idlist = gamedata.map(function(x) { return parseInt(x.id); });
+		var req1 = {"type":"chat", "games": idlist };
+		$.post('go_json.php', {request: JSON.stringify(req1)},
+				function(data) {
+					tm.addChatData(data.detail);
+				});
+	};
 }
 

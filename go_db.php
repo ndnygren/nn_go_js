@@ -85,6 +85,21 @@ function getChat($game_ids) {
 	return $result;
 }
 
+function postChat($user_id, $game_id, $content) {
+	if (!is_int($game_id)) {
+			die('{"status":"error", "detail":"this '.$game_id.' is not an int."}');
+	}
+	$subject = 'Go'.$game_id;
+	db_update("INSERT INTO forum_topics (topic_subject, topic_cat, topic_by, topic_date)
+		SELECT '".$subject."', 4, ".$user_id.", NOW() FROM dual WHERE NOT EXISTS (
+			SELECT topic_id FROM forum_topics WHERE topic_cat=4 AND topic_subject='".$subject."')");
+
+	db_update("INSERT INTO forum_posts (post_topic,post_content, post_by, post_date)
+		SELECT topic_id, '".$content."', ".$user_id.", NOW() FROM forum_topics WHERE topic_subject='".$subject."' AND topic_cat=4
+		");
+
+}
+
 function getGames($usr_id) {
 	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created "
 		." FROM users AS B, users AS W, go_header "
