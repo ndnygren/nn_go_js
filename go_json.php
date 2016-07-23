@@ -76,6 +76,13 @@ if (isset($_POST["request"])) {
 		}
 		postChat($user_id, $post_data['game'], $post_data['content']);
 		echo '{"status":"success", "detail":"good job."}';
+	} else if ($post_data['type'] == "news") {
+		if (!isset($post_data['last_time'])) {
+			die('{"status":"error", "detail":"incomplete news request."}');
+		}
+		$games = getGames($user_id);
+		$chats = getChat(idGameList($games), $post_data['last_time']);
+		echo '{"status":"success", "detail":{"games":'.json_encode(filterGameList($games, $post_data['last_time'])).',"chat":'.json_encode($chats).'}}';
 	} else {
 		die('{"status":"error", "detail":"Unrecognized type."}');
 	}

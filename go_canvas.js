@@ -204,10 +204,61 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		}
 	};
 
+	this.convertMySQLDate = function(x) {
+		if (!x) { return 0; }
+		var t = x.split(/[- :]/);
+		var ts = new Date(Date.UTC(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
+		return ts.getTime();
+	};
+
+	this.padDigits = function(i) {
+		return i < 10 ? "0"+i : i;
+	}
+
+	this.findMaxTime = function() {
+		var gm = this;
+		var timelist, maxtime;
+		var outtime = "";
+		var parsed;
+		if (this.gamedata.length == 0) {
+			var ts = new Date();
+			ts.setDate(1);
+			ts.setHour(1);
+			return ts.toUTCString();
+		}
+		maxtime = 0;
+		for (var i = 0; i < this.gamedata.length; i++) {
+			timelist = this.gamedata[i].seq.map(function (x) { return gm.convertMySQLDate(x[2]); });
+			timelist.push(maxtime);
+			maxtime = Math.max.apply(null, timelist);
+		}
+		for (var i = 0; i < this.tm.data.length; i++) {
+			timelist = this.tm.data.map(function (x) { return gm.convertMySQLDate(x.post_date); });
+			timelist.push(maxtime);
+			maxtime = Math.max.apply(null, timelist);
+		}
+		parsed = new Date(maxtime);
+		outtime += parsed.getFullYear();
+		outtime += "-" + (parsed.getMonth() + 1);
+		outtime += "-" + parsed.getDate();
+		outtime += " " + this.padDigits(parsed.getUTCHours());
+		outtime += ":" + this.padDigits(parsed.getUTCMinutes());
+		outtime += ":" + this.padDigits(parsed.getUTCSeconds());
+		return outtime;
+	}
+
+	this.loadNews = function() {
+		var maxtime = this.findMaxTime();
+		var req = {"type":"news", "last_time": maxtime};
+		$.post('go_json.php', {request: JSON.stringify(req)},
+			function(data){});
+	}
+
 	var gm = this;
 	this.findChallenges();
 	this.loadGames();
-	setInterval(function(x) { gm.loadGames(); }, 30000);
+
+	setInterval(function(x) { gm.loadNews(); }, 30000);
 
 	gm.cw.canvas.addEventListener('click', function(e) {
 		var nb;
@@ -541,14 +592,37 @@ function TalkManager (twindow) {
 		new GoHTML().emptyObj(this.twindow);
 		var ta = document.createElement("textarea");
 		var button = document.createElement("button");
+		var ul = document.createElement("ul");
+		this.output_list = ul;
 		button.appendChild(document.createTextNode("Post"));
 		button.addEventListener('click', tm.makePostCallback(id,ta));
 		ta.style = "width:200px";
 		button.style = "width:200px";
 		this.twindow.appendChild(ta);
 		this.twindow.appendChild(button);
-		this.twindow.appendChild(document.createTextNode(JSON.stringify(this.data)));
+		this.twindow.appendChild(ul);
+		this.populateOutput(id);
 	};
+
+	this.populateOutput = function(id) {
+		var ul = this.output_list;
+		if (!ul) { return; }
+		new GoHTML().emptyObj(ul);
+		var list = this.data.filter(function (x) { return x.topic_subject=="Go"+id; });
+		var lilist = list.map(function(x) {
+			var li = document.createElement("li");
+			var b = document.createElement("b");
+			var i = document.createElement("i");
+			var div = document.createElement("div");
+			b.appendChild(document.createTextNode(x.username));
+			i.appendChild(document.createTextNode(x.post_date));
+			li.appendChild(b);
+			li.appendChild(i);
+			div.appendChild(document.createTextNode(x.post_content));
+			li.appendChild(div);
+			ul.appendChild(li);
+		});
+	}
 
 	this.addChatData = function(data) {
 		this.data = data;

@@ -9,6 +9,17 @@ class GoGame {
 	public $size = 9;
 	public $seq = Array();
 
+	public function latest() {
+		if (count($this->seq) == 0) { return time(); }
+		$max = strtotime($this->seq[0][2]);
+		foreach ($this->seq as $move) {
+			if (strtotime($move[2]) > $max) {
+				$max = strtotime($move[2]);
+			}
+		}
+		return $max;
+	}
+
 	public function __construct($id, $buid, $wuid, $bname, $wname, $size, $seq) {
 		$this->id = $id;
 		$this->wuid = $wuid;
@@ -18,6 +29,24 @@ class GoGame {
 		$this->size = $size;
 		$this->seq = $seq;
 	}
+}
+
+function filterGameList($list, $last_time) {
+	$output = Array();
+	foreach ($list as $game) {
+		if ($game->latest() > strtotime($last_time)) {
+			$output[] = $game;
+		}
+	}
+	return $output;
+}
+
+function idGameList($list) {
+	$output = Array();
+	foreach ($list as $game) {
+		$output[] = intval($game->id);
+	}
+	return $output;
 }
 
 function getChallenges($usr_id) {
@@ -69,7 +98,7 @@ function getGame($game_id) {
 	die('{"status":"error", "detail":"no game '.$game_id.' found"}');
 }
 
-function getChat($game_ids) {
+function getChat($game_ids, $last_time = "2016-01-22 17:48:58") {
 	$glist = [];
 	foreach ($game_ids as $game_id) {
 		if (!is_int($game_id)) {
@@ -81,7 +110,8 @@ function getChat($game_ids) {
 	$result = db_query("SELECT cat_id, topic_id, topic_subject, post_id, post_content, post_date, post_by, username "
 		." FROM forum_categories, forum_topics, forum_posts, users "
 		." WHERE cat_id=topic_cat AND topic_id=post_topic AND post_by=users.id AND cat_name='Go'".
-		" AND topic_subject IN ('" . join("','",$glist) . "')");
+		" AND topic_subject IN ('" . join("','",$glist) . "')".
+		" AND post_date > '". $last_time ."'");
 	return $result;
 }
 
