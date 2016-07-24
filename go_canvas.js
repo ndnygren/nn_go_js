@@ -59,6 +59,13 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.uid = uid;
 	this.current_game = -1;
 
+	this.findIdxById = function(id, arr) {
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i].id == id) { return i; }
+		}
+		return -1;
+	}
+
 	this.findById = function(id, arr) {
 		var single = arr.filter(function (x) { return x.id == id; });
 		if (single.length === 0) { throw("id " + id + " not found."); }
@@ -213,7 +220,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 
 	this.padDigits = function(i) {
 		return i < 10 ? "0"+i : i;
-	}
+	};
 
 	this.findMaxTime = function() {
 		var gm = this;
@@ -245,20 +252,39 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		outtime += ":" + this.padDigits(parsed.getUTCMinutes());
 		outtime += ":" + this.padDigits(parsed.getUTCSeconds());
 		return outtime;
-	}
+	};
 
 	this.loadNews = function() {
+		var gm = this;
 		var maxtime = this.findMaxTime();
 		var req = {"type":"news", "last_time": maxtime};
 		$.post('go_json.php', {request: JSON.stringify(req)},
-			function(data){});
-	}
+			function(data){
+				gm.mergeInChanges(data.detail.games);
+				gm.tm.mergeInChanges(data.detail.chat);
+			});
+	};
+
+	this.mergeInChanges = function(changes) {
+		var idx;
+		for (var i = 0; i < changes.length; i++) {
+			idx = this.findIdxById(changes[i].id, this.gamedata);
+			if (idx == -1) {
+				this.gamedata.push(changes[i]);
+			} else {
+				this.gamedata[idx] = changes[i];
+			}
+		}
+		if (changes.length > 0) {
+			this.addGames(this.gamedata);
+		}
+	};
 
 	var gm = this;
 	this.findChallenges();
 	this.loadGames();
 
-	setInterval(function(x) { gm.loadNews(); }, 30000);
+	setInterval(function(x) { gm.loadNews(); }, 20000);
 
 	gm.cw.canvas.addEventListener('click', function(e) {
 		var nb;
@@ -340,7 +366,7 @@ function CanvasWriter(board, canvas) {
 				Math.abs(this.scaleX(circle.x)-this.scaleX(circle.x+circle.r)),
 				"none",
 				"rgba(0,0,200,128)");
-	}
+	};
 
 	// finds an appropriate scale for the diagram,
 	// depending on the size of the input
@@ -574,6 +600,7 @@ function HistoryManager(hwindow, game_id) {
 function TalkManager (twindow) {
 	this.twindow = twindow;
 	this.data;
+	this.current_id = -1;
 
 	this.makePostCallback = function(id, textarea) {
 		var tm = this;
@@ -588,6 +615,7 @@ function TalkManager (twindow) {
 	}
 
 	this.buildChatBox = function (id) {
+		if (id == this.current_id) { return; }
 		var tm = this;
 		new GoHTML().emptyObj(this.twindow);
 		var ta = document.createElement("textarea");
@@ -622,6 +650,7 @@ function TalkManager (twindow) {
 			li.appendChild(div);
 			ul.appendChild(li);
 		});
+		this.current_id = id;
 	}
 
 	this.addChatData = function(data) {
@@ -636,6 +665,28 @@ function TalkManager (twindow) {
 				function(data) {
 					tm.addChatData(data.detail);
 				});
+	};
+
+	this.findIdxById = function(id, arr) {
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i].post_id == id) { return i; }
+		}
+		return -1;
+	}
+
+	this.mergeInChanges = function(changes) {
+		var idx;
+		for (var i = 0; i < changes.length; i++) {
+			idx = this.findIdxById(changes[i].post_id, this.data);
+			if (idx == -1) {
+				this.data.push(changes[i]);
+			} else {
+				this.data[idx] = changes[i];
+			}
+		}
+		if (changes.length > 0) {
+			this.populateOutput(this.current_id);
+		}
 	};
 }
 
