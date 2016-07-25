@@ -567,7 +567,8 @@ function HistoryManager(hwindow, game_id) {
 				["users", this.obj.bname, this.obj.wname],
 				["moves", Math.ceil(board.seq.length/2), Math.floor(board.seq.length/2)],
 				["territory", ter_score.b, ter_score.w],
-				["capture", cap_score.b, cap_score.w]]);
+				["capture", cap_score.b, cap_score.w],
+				["judge", this.obj.b_score, this.obj.w_score]]);
 		new GoHTML().emptyObj(this.tablediv);
 		this.tablediv.appendChild(scoretable);
 		new GoHTML().emptyObj(this.timespan);

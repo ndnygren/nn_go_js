@@ -8,6 +8,8 @@ class GoGame {
 	public $wname = -1;
 	public $size = 9;
 	public $seq = Array();
+	public $b_score;
+	public $w_score;
 
 	public function latest() {
 		if (count($this->seq) == 0) { return time(); }
@@ -20,7 +22,7 @@ class GoGame {
 		return $max;
 	}
 
-	public function __construct($id, $buid, $wuid, $bname, $wname, $size, $seq) {
+	public function __construct($id, $buid, $wuid, $bname, $wname, $size, $seq, $b_score, $w_score) {
 		$this->id = $id;
 		$this->wuid = $wuid;
 		$this->buid = $buid;
@@ -28,6 +30,8 @@ class GoGame {
 		$this->bname = $bname;
 		$this->size = $size;
 		$this->seq = $seq;
+		$this->b_score = $b_score;
+		$this->w_score = $w_score;
 	}
 }
 
@@ -70,7 +74,7 @@ function resToGameObj($result) {
 			if ($prev > -1) {
 				$output[] = $temp;
 			}
-			$temp = new GoGame($row["game_id"], $row["wid"], $row["bid"], $row["wname"], $row["bname"], $row["size"], Array());
+			$temp = new GoGame($row["game_id"], $row["bid"], $row["wid"], $row["bname"], $row["wname"], $row["size"], Array(), $row["b_score"], $row["w_score"]);
 			$prev = $row["game_id"];
 		}
 		if ($row["move_id"] != null) {
@@ -85,7 +89,7 @@ function resToGameObj($result) {
 }
 
 function getGame($game_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created"
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created, b_score, w_score"
 		." FROM users AS B, users AS W, go_header "
 		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
 		." WHERE B.id=black_user "
@@ -131,7 +135,7 @@ function postChat($user_id, $game_id, $content) {
 }
 
 function getGames($usr_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created "
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created, b_score, w_score "
 		." FROM users AS B, users AS W, go_header "
 		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
 		." WHERE B.id=black_user "
