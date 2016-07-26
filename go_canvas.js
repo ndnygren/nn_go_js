@@ -98,10 +98,25 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		var req = {"type": "challenges"};
 		$.post('go_json.php', {request: JSON.stringify(req)}, function(data){
 			var selec = document.createElement("select");
+			var bsize = document.createElement("select");
 			var button = document.createElement("button");
+			var opt;
+			opt = document.createElement("option");
+			opt.value = 5;
+			opt.appendChild(document.createTextNode("5x5"));
+			bsize.appendChild(opt);
+			opt = document.createElement("option");
+			opt.value = 9;
+			opt.appendChild(document.createTextNode("9x9"));
+			opt.selected = true;
+			bsize.appendChild(opt);
+			opt = document.createElement("option");
+			opt.value = 13;
+			opt.appendChild(document.createTextNode("13x13"));
+			bsize.appendChild(opt);
 			button.appendChild(document.createTextNode("Challenge"));
 			button.addEventListener('click', function() {
-				var req2 = {"type": "challenge", "id": selec.value, "size": 9};
+				var req2 = {"type": "challenge", "id": selec.value, "size": bsize.value};
 				$.post('go_json.php', {request: JSON.stringify(req2)}, function(data) { });
 				selec.remove(selec.selectedIndex);
 			});
@@ -111,6 +126,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 				opt.appendChild(document.createTextNode(x.username));
 				selec.appendChild(opt);
 			});
+			gm.cwindow.appendChild(bsize);
 			gm.cwindow.appendChild(selec);
 			gm.cwindow.appendChild(button);
 
