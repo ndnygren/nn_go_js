@@ -14,6 +14,10 @@
 *
 */
 
+var birch_bk = new Image();
+birch_bk.src = "birch1.jpg";
+
+
 function GoHTML () {
 	this.emptyObj = function(elem) {
 		while (elem.hasChildNodes()) {
@@ -474,6 +478,8 @@ function CanvasWriter(board, canvas) {
 	};
 
 	this.drawLines = function() {
+		var context = this.canvas.getContext('2d');
+		context.drawImage(birch_bk,0,0, this.canvas.width, this.canvas.height);
 		for (var i = 0; i < this.board.size; i++ ){
 			for (var j = 0; j < this.board.size; j++ ){
 				this.drawLine_uns( this.scaleX(0), this.scaleY(j), this.scaleX(this.board.size-1), this.scaleY(j), "black", 1);
