@@ -4,7 +4,7 @@ var exec = require('child_process').exec;
 var http = require('http');
 var querystring = require('querystring');
 
-var host = "192.168.1.32";
+var host = "192.168.1.33";
 var url = "/nn_go_js/go_json.php";
 var user_id = 2;
 var session_id = 78521752;

@@ -15,7 +15,7 @@
 */
 
 var birch_bk = new Image();
-birch_bk.src = "birch1.jpg";
+birch_bk.src = "Images/birch1.jpg";
 
 
 function GoHTML () {
@@ -59,7 +59,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.swindow = swindow;
 	this.cwindow = cwindow;
 	this.tm = new TalkManager(twindow);
-	this.gamedata;
+	this.gamedata = null;
 	this.uid = uid;
 	this.current_game = -1;
 
@@ -68,7 +68,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			if (arr[i].id == id) { return i; }
 		}
 		return -1;
-	}
+	};
 
 	this.findById = function(id, arr) {
 		var single = arr.filter(function (x) { return x.id == id; });
@@ -80,7 +80,6 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		if (this.current_game == -1) { throw("no game selected"); }
 		var game = this.findById(this.current_game, this.gamedata);
 		if (!this.myTurn(game)) {
-			this.current_game == -1;
 			throw("not your turn on game " + game.id + ".");
 		}
 		game.seq.push([x,y]);
@@ -88,7 +87,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	};
 
 	this.myTurn = function(obj) {
-		if (obj.buid == this.uid && obj.seq.length % 2 == 0) {
+		if (obj.buid == this.uid && obj.seq.length % 2 === 0) {
 			return true;
 		} else if (obj.wuid == this.uid && obj.seq.length % 2 === 1) {
 			return true;
@@ -196,7 +195,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
 			button = document.createElement("button");
-			button.appendChild(document.createTextNode(board.seq.length == 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game"));
+			button.appendChild(document.createTextNode(board.seq.length === 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game"));
 			button.addEventListener('click', gm.makeButtonCallback(obj));
 			gm.swindow.appendChild(button);
 		};
@@ -247,23 +246,23 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		var timelist, maxtime;
 		var outtime = "";
 		var parsed;
-		if (this.gamedata.length == 0) {
+		if (this.gamedata.length === 0) {
 			var ts = new Date();
 			ts.setDate(1);
 			ts.setHour(1);
 			return ts.toUTCString();
 		}
 		maxtime = 0;
-		for (var i = 0; i < this.gamedata.length; i++) {
-			timelist = this.gamedata[i].seq.map(function (x) { return gm.convertMySQLDate(x[2]); });
-			timelist.push(maxtime);
-			maxtime = Math.max.apply(null, timelist);
-		}
-		for (var i = 0; i < this.tm.data.length; i++) {
-			timelist = this.tm.data.map(function (x) { return gm.convertMySQLDate(x.post_date); });
-			timelist.push(maxtime);
-			maxtime = Math.max.apply(null, timelist);
-		}
+		timelist = assocFoldr(this.gamedata.map(function(x) {
+			return x.seq.map(function(y) {
+				return gm.convertMySQLDate(y[2]);
+			});
+		}), function(a,b) {
+			return a.concat(b);
+		}).concat(this.tm.data.map(function(y) {
+			return gm.convertMySQLDate(y.post_date);
+		}));
+		maxtime = Math.max.apply(null, timelist);
 		parsed = new Date(maxtime);
 		outtime += parsed.getFullYear();
 		outtime += "-" + (parsed.getMonth() + 1);
@@ -342,50 +341,6 @@ function CanvasWriter(board, canvas) {
 	// blanks-out canvas (white)
 	this.reset = function() {
 		this.canvas.getContext('2d').clearRect(0, 0, this.canvas.width, this.canvas.height);
-	};
-
-	this.drawPointList = function(list) {
-		for (var i in list.line) {
-			this.drawLine(list.line[i]);
-		}
-		for (var i in list.circle) {
-			this.drawArc(list.circle[i]);
-		}
-		for (var i in list.point) {
-			this.drawPoint(list.point[i].x, list.point[i].y);
-		}
-	};
-
-	this.drawPoint = function(x,y) {
-		this.drawCircle(this.scaleX(x), this.scaleY(y), 2, "red");
-	};
-
-	this.drawLine = function(line) {
-		var s = line.y2 - line.y1; //rise
-		var n = line.x2 - line.x1; //run
-		this.drawLine_uns(this.scaleX(line.x1),
-				this.scaleY(line.y1),
-				this.scaleX(line.x2),
-				this.scaleY(line.y2),
-				"rgba(0,255,0,196)", 1);
-		this.drawLine_uns(this.scaleX(line.x1),
-				this.scaleY(line.y1),
-				this.scaleX(line.x1-n),
-				this.scaleY(line.y1-s),
-				"rgba(0,255,0,127)", 1);
-		this.drawLine_uns(this.scaleX(line.x2+n),
-				this.scaleY(line.y2+s),
-				this.scaleX(line.x2),
-				this.scaleY(line.y2),
-				"rgba(0,255,0,127)", 1);
-	};
-
-	this.drawArc = function(circle) {
-		this.drawCircle_uns(this.scaleX(circle.x),
-				this.scaleY(circle.y),
-				Math.abs(this.scaleX(circle.x)-this.scaleX(circle.x+circle.r)),
-				"none",
-				"rgba(0,0,200,128)");
 	};
 
 	// finds an appropriate scale for the diagram,
@@ -479,12 +434,11 @@ function CanvasWriter(board, canvas) {
 
 	this.drawLines = function() {
 		var context = this.canvas.getContext('2d');
+		var color = "rgba(0, 0, 0, 0.5)";
 		context.drawImage(birch_bk,0,0, this.canvas.width, this.canvas.height);
-		for (var i = 0; i < this.board.size; i++ ){
-			for (var j = 0; j < this.board.size; j++ ){
-				this.drawLine_uns( this.scaleX(0), this.scaleY(j), this.scaleX(this.board.size-1), this.scaleY(j), "black", 1);
-				this.drawLine_uns( this.scaleX(i), this.scaleY(0), this.scaleX(i), this.scaleY(this.board.size-1), "black", 1);
-			}
+		for (var j = 0; j < this.board.size; j++ ){
+			this.drawLine_uns( this.scaleX(0), this.scaleY(j), this.scaleX(this.board.size-1), this.scaleY(j), color, 1);
+			this.drawLine_uns( this.scaleX(j), this.scaleY(0), this.scaleX(j), this.scaleY(this.board.size-1), color, 1);
 		}
 	};
 
@@ -521,7 +475,7 @@ function CanvasWriter(board, canvas) {
 			context.fillText(i+1, offedge, this.scaleY(i));
 			context.fillText(i+1, this.canvas.width - offedge, this.scaleY(i));
 		}
-	}
+	};
 
 	this.redraw = function(board) {
 		this.board = board;
@@ -543,7 +497,7 @@ function CanvasWriter(board, canvas) {
 
 function HistoryManager(hwindow, game_id) {
 	this.hwindow=hwindow;
-	this.cw;
+	this.cw = null;
 	this.game_id = game_id;
 
 	this.makeCanvas = function() {
@@ -561,8 +515,8 @@ function HistoryManager(hwindow, game_id) {
 		h3.appendChild(document.createTextNode("Game " + this.game_id));
 		bl.appendChild(document.createTextNode("< Back"));
 		br.appendChild(document.createTextNode("Forward >"));
-		bl.addEventListener('click', function() { hm.decMove() });
-		br.addEventListener('click', function() { hm.incMove() });
+		bl.addEventListener('click', function() { hm.decMove(); });
+		br.addEventListener('click', function() { hm.incMove(); });
 		ldiv.className = "inner_div";
 		rdiv.className = "inner_div";
 		canvas.width = 400;
@@ -626,7 +580,6 @@ function TalkManager (twindow) {
 	this.current_id = -1;
 
 	this.makePostCallback = function(id, textarea) {
-		var tm = this;
 		return function () {
 			var req = {"type":"chatpost", "game": parseInt(id), "content": textarea.value };
 			$.post('go_json.php', {request: JSON.stringify(req)},
@@ -635,7 +588,7 @@ function TalkManager (twindow) {
 					}
 			      );
 		};
-	}
+	};
 
 	this.buildChatBox = function (id) {
 		if (id == this.current_id) { return; }
@@ -674,7 +627,7 @@ function TalkManager (twindow) {
 			ul.appendChild(li);
 		});
 		this.current_id = id;
-	}
+	};
 
 	this.addChatData = function(data) {
 		this.data = data;
@@ -695,7 +648,7 @@ function TalkManager (twindow) {
 			if (arr[i].post_id == id) { return i; }
 		}
 		return -1;
-	}
+	};
 
 	this.mergeInChanges = function(changes) {
 		var idx;
