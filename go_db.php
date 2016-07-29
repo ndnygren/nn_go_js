@@ -10,6 +10,7 @@ class GoGame {
 	public $seq = Array();
 	public $b_score;
 	public $w_score;
+	public $time;
 
 	public function latest() {
 		if (count($this->seq) == 0) { return time(); }
@@ -32,6 +33,7 @@ class GoGame {
 		$this->seq = $seq;
 		$this->b_score = $b_score;
 		$this->w_score = $w_score;
+		$this->time = time();
 	}
 }
 

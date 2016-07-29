@@ -62,6 +62,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.gamedata = null;
 	this.uid = uid;
 	this.current_game = -1;
+	this.servertime = -1;
 
 	this.findIdxById = function(id, arr) {
 		for (var i = 0; i < arr.length; i++) {
@@ -167,13 +168,26 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		};
 	};
 
+	this.softTime = function(movetime) {
+		if (!movetime) { return "never"; }
+		var now = this.servertime;
+		var then = gm.convertMySQLDate(movetime) / 1000.0;
+		var diff = Math.floor(now - then);
+		if (diff > 24*60*60) { return Math.floor(diff/24/60/60) + " days ago"; }
+		else if (diff > 60*60) { return Math.floor(diff/60/60) + " hours ago"; }
+		else if (diff > 60) { return Math.floor(diff/60) + " minutes ago"; }
+		return diff + " seconds ago";
+	}
+
 	this.makeLiCallback = function (obj) {
+		this.servertime = Math.max(this.servertime, obj.time);
 		var gm = this;
 		var button;
 		return function() {
 			new GoHTML().emptyObj(gm.swindow);
 			var board = new GoBoard(obj.size);
 			var h3 = document.createElement("h3");
+			var timediv = document.createElement("div");
 			if (board.moveSeqValid(obj.seq,2)) {
 				board = board.addSeq(obj.seq,2);
 			} else {
@@ -192,8 +206,10 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			gm.tm.buildChatBox(gm.current_game);
 			gm.cw.redraw(board);
 			h3.appendChild(document.createTextNode("Game " + obj.id));
+			timediv.appendChild(document.createTextNode("moved " + (obj.seq.length > 0 ? gm.softTime(obj.seq[obj.seq.length -1][2]) : "never")));
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
+			gm.swindow.appendChild(timediv);
 			button = document.createElement("button");
 			button.appendChild(document.createTextNode(board.seq.length === 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game"));
 			button.addEventListener('click', gm.makeButtonCallback(obj));
