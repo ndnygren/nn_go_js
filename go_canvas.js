@@ -550,7 +550,7 @@ function HistoryManager(hwindow, game_id) {
 	};
 
 	this.setMove = function(i) {
-		var board = new GoBoard(this.obj.size).addSeq(this.obj.seq.slice(0,i));
+		var board = boardCache.getBoard(this.obj.size, this.obj.seq.slice(0,i));
 		var last = i > 0 ? this.obj.seq[i-1] : [-2,-1, "Never"];
 		var ter_score = board.scoreFromMap();
 		var cap_score = board.captureCount();

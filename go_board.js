@@ -109,6 +109,53 @@ function HashTable() {
 	};
 }
 
+function SeqHashTable () {
+	this.data = new HashTable();
+
+	this.getBoard = function(size, seq) {
+		var hashable = new this.SeqHashable(seq);
+		var board;
+		if (this.data.has(hashable) && this.data.get(hashable).size == size) {
+			return this.data.get(hashable);
+		}
+		else {
+			board = new GoBoard(size).addSeq(seq);
+			this.data.set(hashable, board);
+			return board;
+		}
+	};
+}
+
+SeqHashTable.prototype.SeqHashable = function(seq) {
+	this.seq = seq;
+
+	this.hash = function() {
+		if (this.hashed) { return this.hashed; }
+		this.hashed = 0;
+		for (var i = 0; i < this.seq.length; i++) {
+			this.hashed += this.seq[i][0];
+			this.hashed *= 2;
+			this.hashed += this.seq[i][1];
+			this.hashed *= 2;
+			this.hashed = this.hashed % 100000;
+		}
+		return this.hashed;
+	};
+
+	this.equalTo = function(rhs) {
+		if (this.seq.length != rhs.seq.length) {
+			return false;
+		}
+		return assocFoldr( zippr(this.seq, rhs.seq, function(a,b) {
+			return a[0]==b[0] && a[1]==b[1];
+		}), function (a,b){
+			return a && b;
+		});
+	};
+};
+
+var boardCache = new SeqHashTable();
+
 function GoBoard(size) {
 	this.size = size;
 	this.seq = [];
