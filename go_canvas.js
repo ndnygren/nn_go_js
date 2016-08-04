@@ -590,6 +590,51 @@ function HistoryManager(hwindow, game_id) {
 	});
 }
 
+function HistoryList(outdiv) {
+	this.hwindow = outdiv;
+	this.data = [];
+
+	this.populateList = function() {
+		var h3 = document.createElement("h3");
+		var ul = document.createElement("ul");
+		h3.appendChild(document.createTextNode("Games"));
+		new GoHTML().emptyObj(this.hwindow);
+		this.hwindow.appendChild(h3);
+		this.data.map(function (x) {
+			var li = document.createElement("li");
+			var sp1 = document.createElement("span");
+			var sp2 = document.createElement("span");
+			var sp3 = document.createElement("span");
+			var sp4 = document.createElement("span");
+			var link = document.createElement("a");
+			link.href = "go_hist.php?id=" + x.game_id;
+			li.className = "history_list";
+			sp1.className = "game_id";
+			link.appendChild(document.createTextNode("Game " + x.game_id));
+			sp1.appendChild(link);
+			li.appendChild(sp1);
+			sp2.className = "black_user";
+			sp2.appendChild(document.createTextNode("B:" + x.bname));
+			li.appendChild(sp2);
+			sp3.className = "white_user";
+			sp3.appendChild(document.createTextNode("W:" + x.wname));
+			li.appendChild(sp3);
+			sp4.className = "status";
+			sp4.appendChild(document.createTextNode("S:" + x.status));
+			li.appendChild(sp4);
+			ul.appendChild(li)
+		});
+		this.hwindow.appendChild(ul);
+	}
+
+	var hm = this;
+	var req = {"type": "history_list"};
+	$.post('go_json.php', {request: JSON.stringify(req)}, function(data){
+		hm.data = data.detail;
+		hm.populateList();
+	});
+}
+
 function TalkManager (twindow) {
 	this.twindow = twindow;
 	this.data;
@@ -647,6 +692,9 @@ function TalkManager (twindow) {
 
 	this.addChatData = function(data) {
 		this.data = data;
+		if (this.current_id > -1) {
+			this.populateOutput(this.current_id);
+		}
 	};
 
 	this.loadChat = function(gamedata) {

@@ -83,6 +83,8 @@ if (isset($_POST["request"])) {
 		$games = getGames($user_id);
 		$chats = getChat(idGameList($games), $post_data['last_time']);
 		echo '{"status":"success", "detail":{"games":'.json_encode(filterGameList($games, $post_data['last_time'])).',"chat":'.json_encode($chats).'}}';
+	} else if ($post_data['type'] == "history_list") {
+		echo '{"status":"success", "detail": ' . json_encode(getHistoryList()) . '}';
 	} else {
 		die('{"status":"error", "detail":"Unrecognized type."}');
 	}
