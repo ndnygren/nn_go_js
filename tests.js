@@ -35,22 +35,22 @@ function goTests() {
 		return board.moveSeqValid([[1,1],[0,0],[1,0]],1) && !board.moveSeqValid([[1,1],[0,0],[1,1]],1);
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var board = boardCache.getBoard(9, test_setup1);
 		var libs = board.lib_map();
 		return libs[0][1].length == 2;
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var board = boardCache.getBoard(9, test_setup1);
 		var min = board.pointMin([2,6],[3,5]);
 		return min[0] == 2 && min[1] == 6;
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var board = boardCache.getBoard(9, test_setup1);
 		var groups = board.group_map();
 		return groups[1][0] == groups[2][0] && groups[1][2] != groups[2][2];
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(9).addSeq(test_setup1,1);
+		var board = boardCache.getBoard(9, test_setup1);
 		var libs = board.groupLib(0,1);
 		return libs.length == 4;
 	});
@@ -101,23 +101,20 @@ function goTests() {
 		return ht.get(new hable(4))==4 && ht.has(new hable(6)) && !ht.has(new hable(7));
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(5);
 		var seq = [[2,4],[0,1],[3,3],[1,0],[4,2],[1,1],[2,3],[2,1],[3,2],[1,2],[4,4],[0,3],[1,4],[3,0]];
-		board = board.addSeq(seq,2);
+		var board = boardCache.getBoard(5, seq);
 		var score = board.scoreFromMap();
 		return score.w == 3 && score.b == 2;
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(5);
 		var seq = [[2,4],[0,1],[3,3],[1,0],[4,2]];
-		board = board.addSeq(seq,2);
+		var board = boardCache.getBoard(5, seq);
 		var score = board.scoreFromMap();
 		return score.w == 1 && score.b == 3;
 	});
 	this.tests.push(function() {
-		var board = new GoBoard(5);
 		var seq = [[0,2],[0,0],[1,1],[2,1],[0,1],[1,2],[1,0],[0,3],[0,0],[2,0]];
-		board = board.addSeq(seq,2);
+		var board = boardCache.getBoard(5, seq);
 		var score = board.captureCount();
 		return score.w == 5 && score.b == 1;
 	});

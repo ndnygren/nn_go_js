@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+ini_set('date.timezone', 'UTC');
 
 include 'security/dbconnect.php';
 include 'security/sessioncheckhead.php';

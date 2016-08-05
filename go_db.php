@@ -1,5 +1,6 @@
 <?php
 
+
 class GoGame {
 	public $id = -1;
 	public $buid  = -1;

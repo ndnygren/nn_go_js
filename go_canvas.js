@@ -158,7 +158,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 
 	this.makeButtonCallback = function (obj) {
 		var gm = this;
-		var board = new GoBoard(obj.size).addSeq(obj.seq);
+		var board = boardCache.getBoard(obj.size, obj.seq);
 		var ter_score = board.scoreFromMap();
 		var cap_score = board.captureCount();
 		var req = {"type": "pass", "id": gm.current_game, "b": ter_score.b+cap_score.b, "w":ter_score.w+cap_score.w};
@@ -189,7 +189,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			var h3 = document.createElement("h3");
 			var timediv = document.createElement("div");
 			if (board.moveSeqValid(obj.seq,2)) {
-				board = board.addSeq(obj.seq,2);
+				board = boardCache.getBoard(obj.size, obj.seq);
 			} else {
 				gm.swindow.appendChild(document.createTextNode( "invalid move seq in game " + obj.id));
 				return;
@@ -253,33 +253,9 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		return ts.getTime();
 	};
 
-	this.padDigits = function(i) {
-		return i < 10 ? "0"+i : i;
-	};
-
-	this.findMaxTime = function() {
-		var gm = this;
-		var timelist, maxtime;
+	this.msToMySQL = function (x) {
+		var parsed = new Date(x);
 		var outtime = "";
-		var parsed;
-		if (this.gamedata.length === 0) {
-			var ts = new Date();
-			ts.setDate(1);
-			ts.setHour(1);
-			return ts.toUTCString();
-		}
-		maxtime = 0;
-		timelist = assocFoldr(this.gamedata.map(function(x) {
-			return x.seq.map(function(y) {
-				return gm.convertMySQLDate(y[2]);
-			});
-		}), function(a,b) {
-			return a.concat(b);
-		}).concat(this.tm.data.map(function(y) {
-			return gm.convertMySQLDate(y.post_date);
-		}));
-		maxtime = Math.max.apply(null, timelist);
-		parsed = new Date(maxtime);
 		outtime += parsed.getFullYear();
 		outtime += "-" + (parsed.getMonth() + 1);
 		outtime += "-" + parsed.getDate();
@@ -287,6 +263,33 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		outtime += ":" + this.padDigits(parsed.getUTCMinutes());
 		outtime += ":" + this.padDigits(parsed.getUTCSeconds());
 		return outtime;
+	};
+
+	this.padDigits = function(i) {
+		return i < 10 ? "0"+i : i;
+	};
+
+	this.findMaxTime = function() {
+		var gm = this;
+		var timelist;
+		if (this.gamedata.length === 0) {
+			var ts = new Date();
+			ts.setDate(1);
+			ts.setHour(1);
+			return ts.toUTCString();
+		}
+		timelist = assocFoldr(this.gamedata.map(function(x) {
+			return x.seq.filter(function(z){
+				return z[2];
+			}).map(function(y) {
+				return gm.convertMySQLDate(y[2]);
+			});
+		}), function(a,b) {
+			return a.concat(b);
+		}).concat(this.tm.data.map(function(y) {
+			return gm.convertMySQLDate(y.post_date);
+		}));
+		return this.msToMySQL(Math.max.apply(null, timelist));
 	};
 
 	this.loadNews = function() {
