@@ -322,7 +322,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.findChallenges();
 	this.loadGames();
 
-	setInterval(function(x) { gm.loadNews(); }, 20000);
+	setInterval(function(x) { gm.loadNews(); }, 2000);
 
 	gm.cw.canvas.addEventListener('click', function(e) {
 		var nb;

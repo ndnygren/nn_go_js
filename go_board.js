@@ -252,27 +252,39 @@ function GoBoard(size) {
 
 	this.add = function(i,j) {
 		var output = this.copy();
-		var grp = this.group_map();
-		var g;
-		var color = ((this.seq.length+1) % 2) + 1;
+		output.seq = this.seq;
+		output.dangerAdd(i,j);
 		output.seq = this.seq.concat([[i,j]]);
-		if (i == -1) { return output; }
-		output.data[i][j] = color;
-		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
-		for (k = 0; k < n.length; k++) {
-			if (this.groupLib(n[k][0],n[k][1]).length == 1) {
-				g = grp[n[k][0]][n[k][1]];
-				output.data = this.removeGroup(output.data, g);
-			}
-		}
 
 		return output;
 	};
 
+	// "danger" because it is not referentially transparent
+	// (modifies in place)
+	this.dangerAdd = function(i,j) {
+		var grp = this.group_map();
+		var g;
+		var color = ((this.seq.length+1) % 2) + 1;
+		if (i == -1) { return; }
+		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
+		for (k = 0; k < n.length; k++) {
+			if (this.groupLib(n[k][0],n[k][1]).length == 1) {
+				g = grp[n[k][0]][n[k][1]];
+				this.data = this.removeGroup(this.data, g);
+			}
+		}
+		this.data[i][j] = color;
+		this.g_cache = undefined;
+		this.c_cache = undefined;
+		this.l_cache = undefined;
+		this.t_cache = undefined;
+	};
+
 	this.addSeq = function(arr) {
-		var current = this;
+		var current = this.copy();
 		for (var i = 0; i < arr.length; i++) {
-			current = current.add(arr[i][0], arr[i][1], ((i + 1) % 2) +1);
+			current.dangerAdd(arr[i][0], arr[i][1]);
+			current.seq.push([arr[i][0], arr[i][1]]);
 		}
 		return current;
 	};
