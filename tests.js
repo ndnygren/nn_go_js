@@ -133,4 +133,27 @@ function goTests() {
 		var seq = [[0,2],[0,0],[-1,-1],[-1,-1],[1,1]];
 		return !board.moveSeqValid(seq);
 	});
+	this.tests.push(function() {
+		var s1 = new SeqHashTable.prototype.SeqHashable([[0,0]]);
+		var s2 = new SeqHashTable.prototype.SeqHashable([[0,1]]);
+		return s1.equalTo(s1) && !s1.equalTo(s2);
+	});
+	this.tests.push(function() {
+		var s1 = new SeqHashTable.prototype.SeqHashable([[0,0],[0,1],[1,0]]);
+		var s2 = new SeqHashTable.prototype.SeqHashable([[0,0],[0,2],[1,0]]);
+		return s1.equalTo(s1) && !s1.equalTo(s2);
+	});
+	this.tests.push(function() {
+		var ht = new HashTable();
+		var s1 = new SeqHashTable.prototype.SeqHashable([[0,0],[0,1],[1,0]]);
+		var s2 = new SeqHashTable.prototype.SeqHashable([[0,0],[0,2],[1,0]]);
+		ht.set(s1, true);
+		return ht.has(s1) && !ht.has(s2);
+	});
+	this.tests.push(function() {
+		var s1 = new SeqHashTable.prototype.SeqHashable(test_setup1);
+		var board = boardCache.getBoard(9, test_setup1);
+		return boardCache.data.has(s1);
+	});
+
 }

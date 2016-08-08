@@ -100,12 +100,13 @@ function HashTable() {
 	};
 
 	this.has = function(key) {
-		try {
-			this.get(key);
-		} catch (e) {
-			return false;
+		var h = key.hash()%this.cap;
+		for (var i = 0; i < this.data[h].length; i++) {
+			if (key.equalTo(this.data[h][i].key)) {
+				return true;
+			}
 		}
-		return true;
+		return false;
 	};
 }
 
@@ -115,19 +116,34 @@ function SeqHashTable () {
 	this.getBoard = function(size, seq) {
 		var hashable = new this.SeqHashable(seq);
 		var board;
+		var seq2;
+		var i, limit=50;
 		if (this.data.has(hashable) && this.data.get(hashable).size == size) {
-			return this.data.get(hashable);
-		}
-		else {
-			board = new GoBoard(size).addSeq(seq);
-			this.data.set(hashable, board);
+			board = this.data.get(hashable);
+			board.seq = seq;
 			return board;
 		}
+		seq2 = seq.map(function(x) { return [x[0],x[1]]; });
+		i = 0;
+		do {
+			seq2.pop();
+			hashable = new this.SeqHashable(seq2);
+			i++;
+			//console.log("checking seq2:" + JSON.stringify(seq2));
+		} while (!this.data.has(hashable) && i < limit)
+		board = new GoBoard(size).addSeq(seq2);
+		for (i = seq2.length; i < seq.length; i++) {
+			seq2.push(seq[i]);
+			hashable = new this.SeqHashable(seq2);
+			board = board.add(seq[i][0], seq[i][1]);
+			this.data.set(hashable, board.copy());
+		}
+		return board;
 	};
 }
 
 SeqHashTable.prototype.SeqHashable = function(seq) {
-	this.seq = seq;
+	this.seq = seq.map(function(x) { return [x[0],x[1]]; });
 
 	this.hash = function() {
 		if (this.hashed) { return this.hashed; }
@@ -146,6 +162,9 @@ SeqHashTable.prototype.SeqHashable = function(seq) {
 		if (this.seq.length != rhs.seq.length) {
 			return false;
 		}
+		if (this.seq.length == 0) {
+			return true;
+		}
 		return assocFoldr( zippr(this.seq, rhs.seq, function(a,b) {
 			return a[0]==b[0] && a[1]==b[1];
 		}), function (a,b){
@@ -160,7 +179,6 @@ function GoBoard(size) {
 	this.size = size;
 	this.seq = [];
 	this.data = [];
-	this.letters = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T','U','V','W'];
 
 	for (var i = 0; i < size; i++) {
 		this.data.push([]);
@@ -537,4 +555,5 @@ function GoBoard(size) {
 		throw("group id " + grp[i][j] + " not found.");
 	};
 }
+GoBoard.prototype.letters = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T','U','V','W'];
 
