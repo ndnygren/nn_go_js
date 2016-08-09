@@ -51,6 +51,39 @@ function GoHTML () {
 
 		return output;
 	};
+
+	this.convertMySQLDate = function(x) {
+		if (!x) { return 0; }
+		var t = x.split(/[- :]/);
+		var ts = new Date(Date.UTC(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
+		return ts.getTime();
+	};
+
+	this.msToMySQL = function (x) {
+		var parsed = new Date(x);
+		var outtime = "";
+		outtime += parsed.getFullYear();
+		outtime += "-" + (parsed.getMonth() + 1);
+		outtime += "-" + parsed.getDate();
+		outtime += " " + this.padDigits(parsed.getUTCHours());
+		outtime += ":" + this.padDigits(parsed.getUTCMinutes());
+		outtime += ":" + this.padDigits(parsed.getUTCSeconds());
+		return outtime;
+	};
+
+	this.padDigits = function(i) {
+		return i < 10 ? "0"+i : i;
+	};
+
+	this.softTime = function(movetime, now) {
+		if (!movetime) { return "never"; }
+		var then = this.convertMySQLDate(movetime) / 1000.0;
+		var diff = Math.floor(now - then);
+		if (diff > 24*60*60) { return Math.floor(diff/24/60/60) + " days ago"; }
+		else if (diff > 60*60) { return Math.floor(diff/60/60) + " hours ago"; }
+		else if (diff > 60) { return Math.floor(diff/60) + " minutes ago"; }
+		return diff + " seconds ago";
+	};
 }
 
 function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
@@ -168,23 +201,13 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		};
 	};
 
-	this.softTime = function(movetime) {
-		if (!movetime) { return "never"; }
-		var now = this.servertime;
-		var then = gm.convertMySQLDate(movetime) / 1000.0;
-		var diff = Math.floor(now - then);
-		if (diff > 24*60*60) { return Math.floor(diff/24/60/60) + " days ago"; }
-		else if (diff > 60*60) { return Math.floor(diff/60/60) + " hours ago"; }
-		else if (diff > 60) { return Math.floor(diff/60) + " minutes ago"; }
-		return diff + " seconds ago";
-	}
-
 	this.makeLiCallback = function (obj) {
 		this.servertime = Math.max(this.servertime, obj.time);
+		var golib = new GoHTML();
 		var gm = this;
 		var button;
 		return function() {
-			new GoHTML().emptyObj(gm.swindow);
+			golib.emptyObj(gm.swindow);
 			var board = new GoBoard(obj.size);
 			var h3 = document.createElement("h3");
 			var timediv = document.createElement("div");
@@ -206,7 +229,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			gm.tm.buildChatBox(gm.current_game);
 			gm.cw.redraw(board);
 			h3.appendChild(document.createTextNode("Game " + obj.id));
-			timediv.appendChild(document.createTextNode("moved " + (obj.seq.length > 0 ? gm.softTime(obj.seq[obj.seq.length -1][2]) : "never")));
+			timediv.appendChild(document.createTextNode("moved " + (obj.seq.length > 0 ? golib.softTime(obj.seq[obj.seq.length -1][2], gm.servertime) : "never")));
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
 			gm.swindow.appendChild(timediv);
@@ -246,30 +269,8 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		}
 	};
 
-	this.convertMySQLDate = function(x) {
-		if (!x) { return 0; }
-		var t = x.split(/[- :]/);
-		var ts = new Date(Date.UTC(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
-		return ts.getTime();
-	};
-
-	this.msToMySQL = function (x) {
-		var parsed = new Date(x);
-		var outtime = "";
-		outtime += parsed.getFullYear();
-		outtime += "-" + (parsed.getMonth() + 1);
-		outtime += "-" + parsed.getDate();
-		outtime += " " + this.padDigits(parsed.getUTCHours());
-		outtime += ":" + this.padDigits(parsed.getUTCMinutes());
-		outtime += ":" + this.padDigits(parsed.getUTCSeconds());
-		return outtime;
-	};
-
-	this.padDigits = function(i) {
-		return i < 10 ? "0"+i : i;
-	};
-
 	this.findMaxTime = function() {
+		var golib = new GoHTML();
 		var gm = this;
 		var timelist;
 		if (this.gamedata.length === 0) {
@@ -282,14 +283,14 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			return x.seq.filter(function(z){
 				return z[2];
 			}).map(function(y) {
-				return gm.convertMySQLDate(y[2]);
+				return golib.convertMySQLDate(y[2]);
 			});
 		}), function(a,b) {
 			return a.concat(b);
 		}).concat(this.tm.data.map(function(y) {
-			return gm.convertMySQLDate(y.post_date);
+			return golib.convertMySQLDate(y.post_date);
 		}));
-		return this.msToMySQL(Math.max.apply(null, timelist));
+		return golib.msToMySQL(Math.max.apply(null, timelist));
 	};
 
 	this.loadNews = function() {
@@ -553,6 +554,7 @@ function HistoryManager(hwindow, game_id) {
 	};
 
 	this.setMove = function(i) {
+		var golib = new GoHTML();
 		var board = boardCache.getBoard(this.obj.size, this.obj.seq.slice(0,i));
 		var last = i > 0 ? this.obj.seq[i-1] : [-2,-1, "Never"];
 		var ter_score = board.scoreFromMap();
@@ -564,10 +566,10 @@ function HistoryManager(hwindow, game_id) {
 				["territory", ter_score.b, ter_score.w],
 				["capture", cap_score.b, cap_score.w],
 				["judge", this.obj.b_score, this.obj.w_score]]);
-		new GoHTML().emptyObj(this.tablediv);
+		golib.emptyObj(this.tablediv);
 		this.tablediv.appendChild(scoretable);
-		new GoHTML().emptyObj(this.timespan);
-		this.timespan.appendChild(document.createTextNode(last[2]));
+		golib.emptyObj(this.timespan);
+		this.timespan.appendChild(document.createTextNode(i > 0 ? golib.softTime(last[2], this.obj.time) : "Never"));
 		this.cw.redraw(board);
 		this.move = i;
 	};
