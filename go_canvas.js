@@ -77,8 +77,8 @@ function GoHTML () {
 
 	this.softTime = function(movetime, now) {
 		if (!movetime) { return "never"; }
-		var then = this.convertMySQLDate(movetime) / 1000.0;
-		var diff = Math.floor(now - then);
+		var then = this.convertMySQLDate(movetime);
+		var diff = Math.floor((now - then)/1000.0);
 		if (diff > 24*60*60) { return Math.floor(diff/24/60/60) + " days ago"; }
 		else if (diff > 60*60) { return Math.floor(diff/60/60) + " hours ago"; }
 		else if (diff > 60) { return Math.floor(diff/60) + " minutes ago"; }
@@ -202,8 +202,8 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	};
 
 	this.makeLiCallback = function (obj) {
-		this.servertime = Math.max(this.servertime, obj.time);
 		var golib = new GoHTML();
+		this.servertime = Math.max(this.servertime, golib.convertMySQLDate(obj.time));
 		var gm = this;
 		var button;
 		return function() {
@@ -323,7 +323,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.findChallenges();
 	this.loadGames();
 
-	setInterval(function(x) { gm.loadNews(); }, 2000);
+	setInterval(function(x) { gm.loadNews(); }, 20000);
 
 	gm.cw.canvas.addEventListener('click', function(e) {
 		var nb;
@@ -569,7 +569,7 @@ function HistoryManager(hwindow, game_id) {
 		golib.emptyObj(this.tablediv);
 		this.tablediv.appendChild(scoretable);
 		golib.emptyObj(this.timespan);
-		this.timespan.appendChild(document.createTextNode(i > 0 ? golib.softTime(last[2], this.obj.time) : "Never"));
+		this.timespan.appendChild(document.createTextNode(i > 0 ? golib.softTime(last[2], golib.convertMySQLDate(this.obj.time)) : "Never"));
 		this.cw.redraw(board);
 		this.move = i;
 	};

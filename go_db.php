@@ -24,7 +24,7 @@ class GoGame {
 		return $max;
 	}
 
-	public function __construct($id, $buid, $wuid, $bname, $wname, $size, $seq, $b_score, $w_score) {
+	public function __construct($id, $buid, $wuid, $bname, $wname, $size, $seq, $b_score, $w_score, $servertime) {
 		$this->id = $id;
 		$this->wuid = $wuid;
 		$this->buid = $buid;
@@ -34,7 +34,7 @@ class GoGame {
 		$this->seq = $seq;
 		$this->b_score = $b_score;
 		$this->w_score = $w_score;
-		$this->time = time();
+		$this->time = $servertime;
 	}
 }
 
@@ -82,7 +82,7 @@ function resToGameObj($result) {
 			if ($prev > -1) {
 				$output[] = $temp;
 			}
-			$temp = new GoGame($row["game_id"], $row["bid"], $row["wid"], $row["bname"], $row["wname"], $row["size"], Array(), $row["b_score"], $row["w_score"]);
+			$temp = new GoGame($row["game_id"], $row["bid"], $row["wid"], $row["bname"], $row["wname"], $row["size"], Array(), $row["b_score"], $row["w_score"], $row["servertime"]);
 			$prev = $row["game_id"];
 		}
 		if ($row["move_id"] != null) {
@@ -97,7 +97,7 @@ function resToGameObj($result) {
 }
 
 function getGame($game_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created, b_score, w_score"
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created, b_score, w_score, NOW() AS servertime"
 		." FROM users AS B, users AS W, go_header "
 		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
 		." WHERE B.id=black_user "
@@ -143,7 +143,7 @@ function postChat($user_id, $game_id, $content) {
 }
 
 function getGames($usr_id) {
-	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created, b_score, w_score "
+	$result = db_query("SELECT go_header.game_id, size, W.id AS wid, B.id AS bid, W.username AS wname, B.username AS bname, move_id, l, r, go_moves.created, b_score, w_score, NOW() AS servertime "
 		." FROM users AS B, users AS W, go_header "
 		." LEFT JOIN go_moves ON go_header.game_id=go_moves.game_id "
 		." WHERE B.id=black_user "
