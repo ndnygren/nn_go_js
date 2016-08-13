@@ -148,12 +148,12 @@ SeqHashTable.prototype.SeqHashable = function(seq) {
 	this.hash = function() {
 		if (this.hashed) { return this.hashed; }
 		this.hashed = 0;
-		for (var i = 0; i < this.seq.length; i++) {
+		for (var i = this.seq.length-1; i >= 0 && this.seq.length - i < 20; i--) {
 			this.hashed += this.seq[i][0];
 			this.hashed *= 2;
 			this.hashed += this.seq[i][1];
 			this.hashed *= 2;
-			this.hashed = this.hashed % 100000;
+			this.hashed = Math.abs(this.hashed % 100000);
 		}
 		return this.hashed;
 	};
@@ -165,11 +165,13 @@ SeqHashTable.prototype.SeqHashable = function(seq) {
 		if (this.seq.length == 0) {
 			return true;
 		}
-		return assocFoldr( zippr(this.seq, rhs.seq, function(a,b) {
-			return a[0]==b[0] && a[1]==b[1];
-		}), function (a,b){
-			return a && b;
-		});
+		for (var i = 0; i < this.seq.length; i++){
+			if (this.seq[i][0]!=rhs.seq[i][0] ||
+				this.seq[i][1]!=rhs.seq[i][1]) {
+				return false
+			}
+		}
+		return true;
 	};
 };
 

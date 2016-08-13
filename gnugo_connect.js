@@ -81,24 +81,12 @@ function addNoise(loc, obj, mistake) {
 function findAndSendMove(obj, conn) {
 	var req = {"type": "move", "uid": conn.user_id};
 	var loc;
-	var board = new GoBoard(obj.size).addSeq(obj.seq);
-	var ter_score = board.scoreFromMap();
-	var cap_score = board.captureCount();
-	var bs = ter_score.b+cap_score.b;
-	var ws = ter_score.w+cap_score.w;
-	if (obj.seq.length > 0 && obj.seq[obj.seq.length -1][0] == -1) {
-		if ((obj.seq.length % 2 == 0 && bs > ws) || (obj.seq.length % 2 == 1 && bs < ws)) {
-			req = makePassReq(obj);
-			doPost(conn.host, conn.url, conn.user_id, conn.session_id, req, function (data) {});
-			return;
-		}
-	}
 
 	if (last_posts[obj.id] >= obj.seq.length) { return; }
 	last_posts[obj.id] = obj.seq.length;
 
 	fs.writeFile("movefile"+obj.id+".txt", adaptSeqToGTP(obj), function(err) {
-		exec("gnugo  --level 1 --mode gtp --capture-all-dead < movefile"+obj.id+".txt", function (error, stdout, stderr) {
+		exec("gnugo  --level 1 --mode gtp < movefile"+obj.id+".txt", function (error, stdout, stderr) {
 			var parts = breakOnDelim(stdout, "=");
 			parts = parts.map(function (x) {
 				return x.replace(/^[ \r\n]+/, "").replace(/[ \r\n]+$/, "");
