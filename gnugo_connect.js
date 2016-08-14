@@ -35,7 +35,7 @@ function alphaNumToLoc(alpha) {
 	return {"l": first, "r": parseInt(alpha.slice(1)) - 1};
 }
 
-function adaptSeqToGTP(game_obj) {
+function adaptSeqToGTPopen(game_obj) {
 	var color = "black";
 	var output = "";
 	output += "boardsize " + game_obj.size + "\n";
@@ -44,6 +44,20 @@ function adaptSeqToGTP(game_obj) {
 		output += "play " + color + " " + locToAlphaNum(game_obj.seq[i]) + "\n";
 		color = color == "black" ? "white" : "black";
 	}
+	return output;
+}
+
+function adaptSeqToJudge(game_obj) {
+	var output = adaptSeqToGTPopen(game_obj);
+	var color = game_obj % 2 == 0 ? "black" : "white";
+	output += "final_score \n";
+	output += "quit\n"
+	return output;
+}
+
+function adaptSeqToGTP(game_obj) {
+	var output = adaptSeqToGTPopen(game_obj);
+	var color = game_obj % 2 == 0 ? "black" : "white";
 	output += "genmove " + color + "\n";
 	output += "quit\n"
 	return output;
@@ -132,6 +146,26 @@ function getGames(conn) {
 	});
 }
 
+function getHistory(conn, callback) {
+	var req = {"type":"history_list"};
+	doPost(conn.host, conn.url, conn.user_id, conn.session_id, req, callback);
+}
+
+function filterForJudgement(conn, min) {
+	return function (data){
+		var list = JSON.parse(data).detail.filter(function (x) {
+			return x.b_score > 0 && x.w_score > 0
+				&& (x.status == "W" || x.status == "B")
+				&& x.game_id >= min;
+		});
+		list.map(function(x) {
+			var req = {"type":"game", "id": parseInt(x.game_id)};
+			doPost(conn.host, conn.url, conn.user_id, conn.session_id, req, getJudgement);
+		});
+	}
+
+}
+
 function doPost(host, url, user_id, session_id, req, callback) {
 	var cookie = "u_t_index="+user_id+"; Session_Id=" + session_id;
 	var qs = querystring.stringify({'request': JSON.stringify(req)});
@@ -158,5 +192,49 @@ function doPost(host, url, user_id, session_id, req, callback) {
 	req.end();
 }
 
+function getJudgement(data) {
+	var req = {"type": "move"};
+	var loc;
+	var obj = JSON.parse(data).detail;
+	var filename = "judgefile"+obj.id+".txt";
+
+	if (last_posts[obj.id] >= obj.seq.length) { return; }
+	last_posts[obj.id] = obj.seq.length;
+
+	fs.writeFile(filename , adaptSeqToJudge(obj), function(err) {
+		exec("gnugo  --level 1 --mode gtp < " + filename, function (error, stdout, stderr) {
+			var parts = breakOnDelim(stdout, "=");
+			var b_score = parseInt(obj.b_score);
+			var w_score = parseInt(obj.w_score);
+			parts = parts.map(function (x) {
+				return x.replace(/^[ \r\n]+/, "").replace(/[ \r\n]+$/, "");
+			}).filter(function (x) {
+				return x != "";
+			});
+			if (parts.length != 1) {
+				throw("An error occured: " + JSON.stringify(parts));
+			}
+			console.log(makeJudgeUpdate(obj, parts[0]));
+		});
+	});
+}
+
+function makeJudgeUpdate(obj, score) {
+	var winner = score.substr(0,1);
+	var diff = parseInt(score.substr(2));
+	var output = "UPDATE go_header SET status = '" + winner + "'";
+	if (winner == "B") {
+		output += ", b_score=" + diff;
+		output += ", w_score=0";
+	} else {
+		output += ", w_score=" + diff;
+		output += ", b_score=0";
+	}
+	output += " WHERE game_id=" + obj.id + ";";
+	return output;
+}
+
 exports.getGames = getGames;
+exports.getHistory = getHistory;
+exports.filterForJudgement = filterForJudgement;
 
