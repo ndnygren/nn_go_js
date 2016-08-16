@@ -165,7 +165,7 @@ SeqHashTable.prototype.SeqHashable = function(seq) {
 		if (this.seq.length == 0) {
 			return true;
 		}
-		for (var i = 0; i < this.seq.length; i++){
+		for (var i = this.seq.length-1; i >= 0; i--){
 			if (this.seq[i][0]!=rhs.seq[i][0] ||
 				this.seq[i][1]!=rhs.seq[i][1]) {
 				return false

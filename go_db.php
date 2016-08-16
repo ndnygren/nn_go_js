@@ -137,7 +137,7 @@ function postChat($user_id, $game_id, $content) {
 			SELECT topic_id FROM forum_topics WHERE topic_cat=4 AND topic_subject='".$subject."')");
 
 	db_update("INSERT INTO forum_posts (post_topic,post_content, post_by, post_date)
-		SELECT topic_id, '".$content."', ".$user_id.", NOW() FROM forum_topics WHERE topic_subject='".$subject."' AND topic_cat=4
+		SELECT topic_id, '".safe_string($content)."', ".$user_id.", NOW() FROM forum_topics WHERE topic_subject='".$subject."' AND topic_cat=4
 		");
 
 }
