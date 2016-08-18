@@ -517,6 +517,32 @@ function GoBoard(size) {
 		return output;
 	};
 
+	this.getGroup = function(i,j) {
+		if (i < 0 || i >= this.size || j < 0 || j >= this.size) {
+			return [];
+		}
+		var color = this.data[i][j];
+		var visited = {};
+		var output = [[i,j,color]];
+		var stack = [[i,j]];
+		var current;
+		var n;
+		visited[i+"_"+j] = true;
+		while (stack.length > 0) {
+			current = stack[stack.length -1];
+			stack.pop();
+			n = this.friendNeigh(current[0],current[1]);
+			for (var i = 0; i < n.length; i++) {
+				if (!visited[n[i][0]+"_"+n[i][1]]) {
+					visited[n[i][0]+"_"+n[i][1]] = true;
+					output.push(n[i]);
+					stack.push(n[i]);
+				}
+			}
+		}
+		return output;
+	}
+
 	this.comb_map = function() {
 		var board = this;
 		if (this.c_cache) { return this.c_cache; }

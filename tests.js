@@ -155,5 +155,21 @@ function goTests() {
 		var board = boardCache.getBoard(9, test_setup1);
 		return boardCache.data.has(s1);
 	});
+	this.tests.push(function() {
+		var board = boardCache.getBoard(9, test_setup1);
+		var group = board.getGroup(0,1);
+		var scores = zippr(group, [[0,1],[0,2],[1,2]], function(a,b){
+			return a[0]==b[0] && a[1]==b[1];
+		});
+		return assocFoldr(scores, function(a,b) {
+			return a && b;
+		});
+
+	});
+	this.tests.push(function() {
+		var board = boardCache.getBoard(9, test_setup1);
+		var group = board.getGroup(0,0);
+		return group.length == 1 && group[0][0] == 0 && group[0][1]==0;
+	});
 
 }
