@@ -282,15 +282,19 @@ function GoBoard(size) {
 	// "danger" because it is not referentially transparent
 	// (modifies in place)
 	this.dangerAdd = function(i,j) {
-		var grp = this.group_map();
+		var board = this;
 		var g;
+		var lib;
 		var color = ((this.seq.length+1) % 2) + 1;
 		if (i == -1) { return; }
-		n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
+		var n = this.matchNeigh(i,j, color == 1 ? 2 : 1);
 		for (k = 0; k < n.length; k++) {
-			if (this.groupLib(n[k][0],n[k][1]).length == 1) {
-				g = grp[n[k][0]][n[k][1]];
-				this.data = this.removeGroup(this.data, g);
+			g = this.getGroup(n[k][0],n[k][1]);
+			lib = g.map(function (x) { return board.emptyNeigh(x[0],x[1]); });
+			lib = assocFoldr(lib, function(a,b) { return b.length == 0 ? a : a.concat(b); });
+			lib = lib.filter(function (x) { return x[0] != i || x[1] != j; });
+			if (lib.length == 0) {
+				this.writeGroup(this.data, g, 0);
 			}
 		}
 		this.data[i][j] = color;
@@ -486,6 +490,12 @@ function GoBoard(size) {
 		return b;
 	};
 
+	this.writeGroup = function(array, list, color) {
+		for (var i = 0; i < list.length; i++) {
+			array[list[i][0]][list[i][1]] = color;
+		}
+	}
+
 	this.group_map = function() {
 		if (this.g_cache) { return this.g_cache; }
 		var output = this.data.map(function(row) { return row.map(function(cell) { return -1; }); });
@@ -497,18 +507,8 @@ function GoBoard(size) {
 		for (var i = 0; i < this.size; i++) {
 			for (var j = 0; j < this.size; j++) {
 				if (output[i][j] == -1) {
-					stack.push([i,j]);
-					while (stack.length > 0) {
-						current = stack[stack.length -1];
-						stack.pop();
-						output[current[0]][current[1]] = g_id;
-						n = this.friendNeigh(current[0],current[1]);
-						for (var k = 0; k < n.length; k++) {
-							if (output[n[k][0]][n[k][1]] == -1) {
-								stack.push(n[k]);
-							}
-						}
-					}
+					n = this.getGroup(i,j);
+					this.writeGroup(output,n,g_id);
 					g_id++;
 				}
 			}
