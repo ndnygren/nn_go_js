@@ -62,7 +62,7 @@ function getChallenges($usr_id) {
 }
 
 function getHistoryList() {
-	$result = db_query("SELECT game_id, black_user AS buid, white_user AS wuid, W.username AS wname, B.username AS bname, status, b_score, w_score FROM go_header, users AS W, users AS B WHERE black_user = B.id AND white_user = W.id ORDER BY game_id DESC");
+	$result = db_query("SELECT game_id, black_user AS buid, white_user AS wuid, W.username AS wname, B.username AS bname, status, b_score, w_score, size FROM go_header, users AS W, users AS B WHERE black_user = B.id AND white_user = W.id ORDER BY game_id DESC");
 	return $result;
 }
 
