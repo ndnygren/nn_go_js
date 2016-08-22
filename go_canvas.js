@@ -91,6 +91,14 @@ function GoHTML () {
 		sp.appendChild(document.createTextNode(text));
 		return sp;
 	};
+
+	this.elemWithTextValue = function(type, classname, text, value) {
+		var sp = document.createElement(type);
+		sp.className = classname;
+		sp.value = value;
+		sp.appendChild(document.createTextNode(text));
+		return sp;
+	};
 }
 
 function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
@@ -140,24 +148,16 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.findChallenges = function() {
 		var gm = this;
 		var req = {"type": "challenges"};
+		var golib = new GoHTML();
 		$.post('go_json.php', {request: JSON.stringify(req)}, function(data){
 			var selec = document.createElement("select");
 			var bsize = document.createElement("select");
 			var button = document.createElement("button");
 			var opt;
-			opt = document.createElement("option");
-			opt.value = 5;
-			opt.appendChild(document.createTextNode("5x5"));
-			bsize.appendChild(opt);
-			opt = document.createElement("option");
-			opt.value = 9;
-			opt.appendChild(document.createTextNode("9x9"));
-			opt.selected = true;
-			bsize.appendChild(opt);
-			opt = document.createElement("option");
-			opt.value = 13;
-			opt.appendChild(document.createTextNode("13x13"));
-			bsize.appendChild(opt);
+			bsize.appendChild(golib.elemWithTextValue("option","","5x5",5));
+			bsize.appendChild(golib.elemWithTextValue("option","","9x9",9));
+			bsize.appendChild(golib.elemWithTextValue("option","","13x13",13));
+			bsize.appendChild(golib.elemWithTextValue("option","","19x19",19));
 			button.appendChild(document.createTextNode("Challenge"));
 			button.addEventListener('click', function() {
 				var req2 = {"type": "challenge", "id": selec.value, "size": bsize.value};
@@ -628,10 +628,10 @@ function HistoryList(outdiv) {
 			li.appendChild(golib.elemWithText("span", "status", "S:" + x.status));
 			li.appendChild(golib.elemWithText("span", "status", "(" +x.b_score + "," + x.w_score + ")"));
 			li.appendChild(golib.elemWithText("span", "status", x.size + "X" + x.size));
-			ul.appendChild(li)
+			ul.appendChild(li);
 		});
 		this.hwindow.appendChild(ul);
-	}
+	};
 
 	var hm = this;
 	var req = {"type": "history_list"};
@@ -643,7 +643,7 @@ function HistoryList(outdiv) {
 
 function TalkManager (twindow) {
 	this.twindow = twindow;
-	this.data;
+	this.data = [];
 	this.current_id = -1;
 
 	this.makePostCallback = function(id, textarea) {
