@@ -26,24 +26,20 @@ function GoHTML () {
 	};
 
 	this.tableFrom2dArray = function(arr1) {
+		var golib = this;
 		var output = document.createElement("table");
 		var topheader = document.createElement("tr");
 		if (arr1.length === 0) { return output; }
 		arr1[0].map( function(cell) {
-			var th = document.createElement("th");
-			th.appendChild(document.createTextNode(cell));
-			topheader.appendChild(th);
+			topheader.appendChild(golib.elemWithText("th","",cell));
 		});
 		output.appendChild(topheader);
 		arr1.slice(1).map(function(row) {
 			var tr = document.createElement("tr");
-			var th = document.createElement("th");
-			th.appendChild(document.createTextNode(row[0]));
+			var th = golib.elemWithText("th", "", row[0]);
 			tr.appendChild(th);
 			row.slice(1).map(function(cell){
-				var td = document.createElement("td");
-				td.appendChild(document.createTextNode(cell));
-				tr.appendChild(td);
+				tr.appendChild(golib.elemWithText("td","",cell));
 			});
 			output.appendChild(tr);
 
@@ -93,10 +89,8 @@ function GoHTML () {
 	};
 
 	this.elemWithTextValue = function(type, classname, text, value) {
-		var sp = document.createElement(type);
-		sp.className = classname;
+		var sp = this.elemWithText(type, classname, text);
 		sp.value = value;
-		sp.appendChild(document.createTextNode(text));
 		return sp;
 	};
 }
@@ -152,23 +146,19 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		$.post('go_json.php', {request: JSON.stringify(req)}, function(data){
 			var selec = document.createElement("select");
 			var bsize = document.createElement("select");
-			var button = document.createElement("button");
+			var button = golib.elemWithText("button", "", "Challenge");
 			var opt;
 			bsize.appendChild(golib.elemWithTextValue("option","","5x5",5));
 			bsize.appendChild(golib.elemWithTextValue("option","","9x9",9));
 			bsize.appendChild(golib.elemWithTextValue("option","","13x13",13));
 			bsize.appendChild(golib.elemWithTextValue("option","","19x19",19));
-			button.appendChild(document.createTextNode("Challenge"));
 			button.addEventListener('click', function() {
 				var req2 = {"type": "challenge", "id": selec.value, "size": bsize.value};
 				$.post('go_json.php', {request: JSON.stringify(req2)}, function(data) { });
 				selec.remove(selec.selectedIndex);
 			});
 			data.detail.map(function(x) {
-				var opt = document.createElement("option");
-				opt.value = x.id;
-				opt.appendChild(document.createTextNode(x.username));
-				selec.appendChild(opt);
+				selec.appendChild(golib.elemWithTextValue("option", "", x.username, x.id));
 			});
 			gm.cwindow.appendChild(bsize);
 			gm.cwindow.appendChild(selec);
@@ -216,8 +206,8 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		return function() {
 			golib.emptyObj(gm.swindow);
 			var board = new GoBoard(obj.size);
-			var h3 = document.createElement("h3");
-			var timediv = document.createElement("div");
+			var h3 = golib.elemWithText("h3","", "Game " + obj.id);
+			var timediv = golib.elemWithText("div", "", "moved " + (obj.seq.length > 0 ? golib.softTime(obj.seq[obj.seq.length -1][2], gm.servertime) : "never"));
 			if (board.moveSeqValid(obj.seq,2)) {
 				board = boardCache.getBoard(obj.size, obj.seq);
 			} else {
@@ -226,7 +216,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			}
 			var ter_score = board.scoreFromMap();
 			var cap_score = board.captureCount();
-			var scoretable = new GoHTML().tableFrom2dArray([["","black","white"],
+			var scoretable = golib.tableFrom2dArray([["","black","white"],
 				["users", obj.bname, obj.wname],
 				["moves", Math.ceil(obj.seq.length/2), Math.floor(obj.seq.length/2)],
 				["territory", ter_score.b, ter_score.w],
@@ -235,22 +225,18 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			gm.current_game = obj.id;
 			gm.tm.buildChatBox(gm.current_game);
 			gm.cw.redraw(board);
-			h3.appendChild(document.createTextNode("Game " + obj.id));
-			timediv.appendChild(document.createTextNode("moved " + (obj.seq.length > 0 ? golib.softTime(obj.seq[obj.seq.length -1][2], gm.servertime) : "never")));
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
 			gm.swindow.appendChild(timediv);
-			button = document.createElement("button");
-			button.appendChild(document.createTextNode(board.seq.length === 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game"));
+			button = golib.elemWithText("button", "", board.seq.length === 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game");
 			button.addEventListener('click', gm.makeButtonCallback(obj));
 			gm.swindow.appendChild(button);
 		};
 	};
 
 	this.gameObjToLi = function(obj) {
-		var li = document.createElement("li");
-		li.appendChild(document.createTextNode("game " + obj.id));
-		li.className = this.myTurn(obj) ? "activeTurn" : "inactiveTurn";
+		var golib = new GoHTML();
+		var li = golib.elemWithText("li", this.myTurn(obj) ? "activeTurn" : "inactiveTurn", "game " + obj.id);
 		li.addEventListener('click', this.makeLiCallback(obj));
 
 		return li;
@@ -528,20 +514,18 @@ function HistoryManager(hwindow, game_id) {
 	this.game_id = game_id;
 
 	this.makeCanvas = function() {
+		var golib = new GoHTML();
 		var hm = this;
 		var board = new GoBoard(5);
-		var h3 = document.createElement("h3");
+		var h3 = golib.elemWithText("h3", "", "Game " + this.game_id);
 		var timebox = document.createElement("div");
 		this.timespan = document.createElement("i");
 		var ldiv = document.createElement("div");
 		var rdiv = document.createElement("div");
 		this.tablediv = document.createElement("div");
 		var canvas = document.createElement("canvas");
-		var bl = document.createElement("button");
-		var br = document.createElement("button");
-		h3.appendChild(document.createTextNode("Game " + this.game_id));
-		bl.appendChild(document.createTextNode("< Back"));
-		br.appendChild(document.createTextNode("Forward >"));
+		var bl = golib.elemWithText("button", "", "< Back");
+		var br = golib.elemWithText("button", "", "Forward >");
 		bl.addEventListener('click', function() { hm.decMove(); });
 		br.addEventListener('click', function() { hm.incMove(); });
 		ldiv.className = "inner_div";
@@ -608,19 +592,17 @@ function HistoryList(outdiv) {
 
 	this.populateList = function() {
 		var golib = new GoHTML();
-		var h3 = document.createElement("h3");
+		var h3 = golib.elemWithText("h3", "", "Games");
 		var ul = document.createElement("ul");
-		h3.appendChild(document.createTextNode("Games"));
 		golib.emptyObj(this.hwindow);
 		this.hwindow.appendChild(h3);
 		this.data.map(function (x) {
 			var li = document.createElement("li");
 			var sp1 = document.createElement("span");
-			var link = document.createElement("a");
+			var link = golib.elemWithText("a", "", "Game " + x.game_id);
 			link.href = "go_hist.php?id=" + x.game_id;
 			li.className = "history_list";
 			sp1.className = "game_id";
-			link.appendChild(document.createTextNode("Game " + x.game_id));
 			sp1.appendChild(link);
 			li.appendChild(sp1);
 			li.appendChild(golib.elemWithText("span", "black_user", "B:" + x.bname));
@@ -660,12 +642,12 @@ function TalkManager (twindow) {
 	this.buildChatBox = function (id) {
 		if (id == this.current_id) { return; }
 		var tm = this;
-		new GoHTML().emptyObj(this.twindow);
+		var golib = new GoHTML();
+		golib.emptyObj(this.twindow);
 		var ta = document.createElement("textarea");
-		var button = document.createElement("button");
+		var button = golib.elemWithText("button", "", "Post");
 		var ul = document.createElement("ul");
 		this.output_list = ul;
-		button.appendChild(document.createTextNode("Post"));
 		button.addEventListener('click', tm.makePostCallback(id,ta));
 		ta.style = "width:200px";
 		button.style = "width:200px";
@@ -678,18 +660,16 @@ function TalkManager (twindow) {
 	this.populateOutput = function(id) {
 		var ul = this.output_list;
 		if (!ul) { return; }
-		new GoHTML().emptyObj(ul);
+		var golib = new GoHTML();
+		golib.emptyObj(ul);
 		var list = this.data.filter(function (x) { return x.topic_subject=="Go"+id; });
 		var lilist = list.map(function(x) {
 			var li = document.createElement("li");
-			var b = document.createElement("b");
-			var i = document.createElement("i");
-			var div = document.createElement("div");
-			b.appendChild(document.createTextNode(x.username));
-			i.appendChild(document.createTextNode(x.post_date));
+			var b = golib.elemWithText("b", "", x.username);
+			var i = golib.elemWithText("i", "", x.post_date);
+			var div = golib.elemWithText("div", "", x.post_content);
 			li.appendChild(b);
 			li.appendChild(i);
-			div.appendChild(document.createTextNode(x.post_content));
 			li.appendChild(div);
 			ul.appendChild(li);
 		});
