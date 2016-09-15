@@ -350,16 +350,20 @@ function GoBoard(size) {
 		var history = new HashTable();
 		for (var i = 0; i < arr.length; i++) {
 			if (!current.moveValid(arr[i][0], arr[i][1], ((color+i) % 2) + 1)) {
+//				console.log("move " + i + " is invalid.");
 				return i;
 			}
 			current = current.add(arr[i][0], arr[i][1], ((color+i) % 2) + 1);
 			if (arr[i][0] != -1 && history.has(current)) {
+//				console.log("move " + i + "(" +arr[i][0] +"," +arr[i][1]+ ")" + " violates ko. previous: " + history.get(current));
+//				console.log(JSON.stringify(current.data));
 				return i;
 			}
 			else if (i > 1 && arr[i-1][0] == -1 && arr[i-2][0] == -1) {
+//				console.log("move " + i + " occurs after game ends.");
 				return i;
 			}
-			history.set(current,true);
+			history.set(current,i);
 		}
 		return -1;
 	};
