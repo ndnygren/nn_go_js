@@ -105,6 +105,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 	this.uid = uid;
 	this.current_game = -1;
 	this.servertime = -1;
+	this.proposal = {};
 
 	this.findIdxById = function(id, arr) {
 		for (var i = 0; i < arr.length; i++) {
@@ -224,7 +225,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 
 			gm.current_game = obj.id;
 			gm.tm.buildChatBox(gm.current_game);
-			gm.cw.redraw(board);
+			gm.cw.redraw(board, gm.proposal[gm.current_game]);
 			gm.swindow.appendChild(h3);
 			gm.swindow.appendChild(scoretable);
 			gm.swindow.appendChild(timediv);
@@ -323,15 +324,31 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		var rect = canvas.getBoundingClientRect();
 		var x = Math.floor(gm.cw.scaleXRev(e.clientX - rect.left)+0.5);
 		var y = Math.floor(gm.cw.scaleYRev(e.clientY - rect.top)+0.5);
-		var req = {"type": "move", "id": gm.current_game, "l":x, "r": y };
-		if (gm.cw.board.moveValid(x,y,gm.cw.color) && gm.myTurn(gm.findById(gm.current_game, gm.gamedata))) {
+		var req;
+
+		if ((!gm.proposal[gm.current_game])
+			&& gm.cw.board.moveValid(x,y,gm.cw.color)
+			&& gm.myTurn(gm.findById(gm.current_game, gm.gamedata))) {
+			gm.proposal[gm.current_game] = {"l":x, "r":y};
+			gm.cw.redraw(gm.cw.board, gm.proposal[gm.current_game]);
+		}
+		else if (gm.proposal[gm.current_game] && x == gm.proposal[gm.current_game].l -1 && y == gm.proposal[gm.current_game].r) {
+			x = gm.proposal[gm.current_game].l;
+			y = gm.proposal[gm.current_game].r;
+			req = {"type": "move", "id": gm.current_game, "l":x, "r": y };
 			nb = gm.cw.board.add(x,y, gm.cw.color);
 			if (new GoBoard(nb.size).moveSeqValid(nb.seq)){
+				gm.proposal[gm.current_game] = undefined;
 				gm.cw.redraw(nb);
 				//console.log(JSON.stringify(cw.board.seq));
 				$.post('go_json.php', {request: JSON.stringify(req)}, function(data){ });
 				gm.addMove(x,y);
 			}
+			gm.proposal[gm.current_game] = undefined;
+		}
+		else {
+			gm.proposal[gm.current_game] = undefined;
+			gm.cw.redraw(gm.cw.board);
 		}
 	});
 }
@@ -490,7 +507,13 @@ function CanvasWriter(board, canvas) {
 		}
 	};
 
-	this.redraw = function(board) {
+	this.drawProposal = function(prop) {
+		var radius = Math.abs(this.scaleX(1) - this.scaleX(0))/2.3;
+		this.drawCircle_uns(this.scaleX(prop.l - 1),this.scaleY(prop.r), radius, "green", "gray");
+		this.drawCircle_uns(this.scaleX(prop.l), this.scaleY(prop.r), radius/2, "yellow", "grey");
+	}
+
+	this.redraw = function(board,prop) {
 		this.board = board;
 		this.color = ((board.seq.length + 1) % 2) + 1;
 		this.data_x_high = this.board.size - 1;
@@ -500,6 +523,9 @@ function CanvasWriter(board, canvas) {
 		this.drawLines();
 		this.drawPieces();
 		this.addLettering();
+		if (prop) {
+			this.drawProposal(prop);
+		}
 	};
 
 	this.resetScale();
