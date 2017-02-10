@@ -398,6 +398,19 @@ function CanvasWriter(board, canvas) {
 		this.drawCircle_uns(x,y,r,color,'#000000');
 	};
 
+	// direct canvas interaction, creates a square
+	this.drawSquare_uns = function(x,y,r,fill_color, line_color) {
+		var context = this.canvas.getContext('2d');
+		var w= 1.414 * r;
+		context.beginPath();
+		context.rect(x-w, y-w, 2*w, 2*w);
+		context.fillStyle = fill_color;
+		if (fill_color != "none" ) { context.fill(); }
+		context.lineWidth = 1;
+		context.strokeStyle = line_color;
+		context.stroke();
+	};
+
 	// direct canvas interaction, creates a circle
 	this.drawCircle_uns = function(x,y,r,fill_color, line_color) {
 		var context = this.canvas.getContext('2d');
@@ -511,7 +524,7 @@ function CanvasWriter(board, canvas) {
 		var radius = Math.abs(this.scaleX(1) - this.scaleX(0))/2.3;
 		this.drawCircle_uns(this.scaleX(prop.l - 1),this.scaleY(prop.r), radius, "green", "gray");
 		this.drawCircle_uns(this.scaleX(prop.l), this.scaleY(prop.r), radius/2, "yellow", "grey");
-	}
+	};
 
 	this.redraw = function(board,prop) {
 		this.board = board;
@@ -526,6 +539,20 @@ function CanvasWriter(board, canvas) {
 		if (prop) {
 			this.drawProposal(prop);
 		}
+	};
+
+	this.drawTerritory = function(terr_map) {
+		var radius = Math.abs(this.scaleX(1) - this.scaleX(0))/2.3;
+		var max_lev = Math.max.apply(null, terr_map.map(function (arr) { return Math.max.apply(null, arr); }));
+		var min_lev = Math.min.apply(null, terr_map.map(function (arr) { return Math.min.apply(null, arr); }));
+		for (var i = 0; i < this.board.size; i++) {
+			for (var j = 0; j < this.board.size; j++) {
+				var intense = Math.floor(255*(terr_map[i][j] - min_lev)/(max_lev-min_lev));
+				var intense_str = "rgb(" + intense + "," + intense + "," + intense + ")";
+				this.drawSquare_uns(this.scaleX(i),this.scaleY(j), radius, intense_str, "none");
+			}
+		}
+		this.drawPieces();
 	};
 
 	this.resetScale();

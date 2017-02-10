@@ -639,6 +639,35 @@ function GoAnalysis () {
 		}
 		return board2;
 	};
+
+	this.getColor = function(board, x, y) {
+		if (board.get(x,y) > 0) {
+			return board.get(x,y);
+		} else {
+			var n = board.neigh(x,y);
+			return n[0][2];
+		}
+	};
+
+	this.getTerritoryEstimate = function(board) {
+		var limit = 1;
+		var attempts = [];
+		var output = [];
+		for (var i = 0; i < limit; i++) {
+			attempts.push(this.randomFinish(board));
+		}
+
+		for (i = 0; i < board.size; i++) {
+			output.push([]);
+			for (var j = 0; j < board.size; j++){
+				output[i].push(0);
+				for (var k = 0; k < attempts.length; k++) {
+					output[i][j] += (this.getColor(attempts[k],i,j) == 2 ? 0 : 1);
+				}
+			}
+		}
+		return output;
+	};
 }
 
 GoBoard.prototype.letters = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T','U','V','W'];
