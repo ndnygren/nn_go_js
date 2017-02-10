@@ -203,7 +203,7 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 		var golib = new GoHTML();
 		this.servertime = Math.max(this.servertime, golib.convertMySQLDate(obj.time));
 		var gm = this;
-		var button;
+		var button, terr_butt;
 		return function() {
 			golib.emptyObj(gm.swindow);
 			var board = new GoBoard(obj.size);
@@ -232,6 +232,9 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			button = golib.elemWithText("button", "", board.seq.length === 0 || board.seq[board.seq.length - 1][0] > -1 ? "Pass" : "End Game");
 			button.addEventListener('click', gm.makeButtonCallback(obj));
 			gm.swindow.appendChild(button);
+			terr_butt = golib.elemWithText("button", "", "Estimate Territory");
+			terr_butt.addEventListener('click', function() { gm.cw.drawTerritory(new GoAnalysis().getTerritoryEstimate(board)); });
+			gm.swindow.appendChild(terr_butt);
 		};
 	};
 
@@ -522,7 +525,7 @@ function CanvasWriter(board, canvas) {
 
 	this.drawProposal = function(prop) {
 		var radius = Math.abs(this.scaleX(1) - this.scaleX(0))/2.3;
-		this.drawCircle_uns(this.scaleX(prop.l - 1),this.scaleY(prop.r), radius, "green", "gray");
+		this.drawSquare_uns(this.scaleX(prop.l - 1),this.scaleY(prop.r), radius, "green", "gray");
 		this.drawCircle_uns(this.scaleX(prop.l), this.scaleY(prop.r), radius/2, "yellow", "grey");
 	};
 
