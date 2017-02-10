@@ -536,16 +536,16 @@ function GoBoard(size) {
 			current = stack[stack.length -1];
 			stack.pop();
 			n = this.friendNeigh(current[0],current[1]);
-			for (var i = 0; i < n.length; i++) {
-				if (!visited[n[i][0]+"_"+n[i][1]]) {
-					visited[n[i][0]+"_"+n[i][1]] = true;
-					output.push(n[i]);
-					stack.push(n[i]);
+			for (var k = 0; k < n.length; k++) {
+				if (!visited[n[k][0]+"_"+n[k][1]]) {
+					visited[n[k][0]+"_"+n[k][1]] = true;
+					output.push(n[k]);
+					stack.push(n[k]);
 				}
 			}
 		}
 		return output;
-	}
+	};
 
 	this.comb_map = function() {
 		var board = this;
@@ -592,8 +592,9 @@ function GoAnalysis () {
 	this.validAndGood = function(board, x,y){
 		if (board.moveValid(x, y)){
 			var color = ((board.seq.length+1) % 2) + 1;
-			var n = board.matchNeigh(x,y, color);
-			if (n.length < 4){
+			var mn = board.matchNeigh(x,y, color);
+			var n = board.neigh(x,y);
+			if (n.length > mn.length){
 				return true;
 			}
 		}
@@ -603,13 +604,29 @@ function GoAnalysis () {
 	this.randomMove = function(board) {
 		var x, y;
 		var limit = 10;
-		for (var i = 0; i < limit; i++) {
+
+		//The following section captures groups with only 1 liberty, in a very not-random way
+		var libs = board.comb_map();
+
+		for (var i = 0; i < libs.length; i++) {
+			if (libs[i].libs.length == 1) {
+				if (board.moveValid(libs[i].libs[0][0], libs[i].libs[0][1])){
+					//console.log("ending it " + JSON.stringify(libs[i].libs[0]));
+					return libs[i].libs[0];
+				}
+			}
+		}
+
+		// This is acutal random
+		for (i = 0; i < limit; i++) {
 			x = Math.floor(Math.random() * board.size);
 			y = Math.floor(Math.random() * board.size);
 			if (this.validAndGood(board,x,y)){
 				return [x,y];
 			}
 		}
+
+		// This is a final non-random filling
 		for (i = 0; i < board.size; i++) {
 			for (var j = 0; j < board.size; j++) {
 				if (this.validAndGood(board,i,j)){
@@ -621,9 +638,9 @@ function GoAnalysis () {
 	};
 
 	this.randomFinish = function(board) {
-		var seq = board.seq;
+		var seq = board.seq.slice(0,board.seq.length);
 		if (seq.length > 0 && seq[seq.length - 1][0] < 0) {
-			seq = seq.splice(0,seq.length-1);
+			seq = seq.slice(0,seq.length-1);
 		}
 		var board2 = new GoBoard(board.size).addSeq(seq);
 		var limit = 300;
@@ -650,7 +667,7 @@ function GoAnalysis () {
 	};
 
 	this.getTerritoryEstimate = function(board) {
-		var limit = 1;
+		var limit = 5;
 		var attempts = [];
 		var output = [];
 		for (var i = 0; i < limit; i++) {
@@ -662,7 +679,7 @@ function GoAnalysis () {
 			for (var j = 0; j < board.size; j++){
 				output[i].push(0);
 				for (var k = 0; k < attempts.length; k++) {
-					output[i][j] += (this.getColor(attempts[k],i,j) == 2 ? 0 : 1);
+					output[i][j] += (this.getColor(attempts[k],i,j) == 2 ? -1 : 1);
 				}
 			}
 		}
