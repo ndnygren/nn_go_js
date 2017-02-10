@@ -587,5 +587,59 @@ function GoBoard(size) {
 		throw("group id " + grp[i][j] + " not found.");
 	};
 }
+
+function GoAnalysis () {
+	this.validAndGood = function(board, x,y){
+		if (board.moveValid(x, y)){
+			var color = ((board.seq.length+1) % 2) + 1;
+			var n = board.matchNeigh(x,y, color);
+			if (n.length < 4){
+				return true;
+			}
+		}
+		return false;
+	};
+
+	this.randomMove = function(board) {
+		var x, y;
+		var limit = 10;
+		for (var i = 0; i < limit; i++) {
+			x = Math.floor(Math.random() * board.size);
+			y = Math.floor(Math.random() * board.size);
+			if (this.validAndGood(board,x,y)){
+				return [x,y];
+			}
+		}
+		for (i = 0; i < board.size; i++) {
+			for (var j = 0; j < board.size; j++) {
+				if (this.validAndGood(board,i,j)){
+					return [i,j];
+				}
+			}
+		}
+		return [-1,-1];
+	};
+
+	this.randomFinish = function(board) {
+		var seq = board.seq;
+		if (seq.length > 0 && seq[seq.length - 1][0] < 0) {
+			seq = seq.splice(0,seq.length-1);
+		}
+		var board2 = new GoBoard(board.size).addSeq(seq);
+		var limit = 300;
+		var move;
+
+		for (var i = 0; i < limit; i++) {
+			move = this.randomMove(board2);
+			board2.dangerAdd(move[0], move[1]);
+			board2.seq.push(move);
+			if (move[0] < 0 && board2.seq.length > 2 && board2.seq[board2.seq.length-2][0] < 0){
+				return board2;
+			}
+		}
+		return board2;
+	};
+}
+
 GoBoard.prototype.letters = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','R','S','T','U','V','W'];
 
