@@ -233,7 +233,9 @@ function GameManagerInt(canvas, gamelist, swindow, cwindow, twindow, uid) {
 			button.addEventListener('click', gm.makeButtonCallback(obj));
 			gm.swindow.appendChild(button);
 			terr_butt = golib.elemWithText("button", "", "Estimate Territory");
-			terr_butt.addEventListener('click', function() { gm.cw.drawTerritory(new GoAnalysis().getTerritoryEstimate(board)); });
+			terr_butt.addEventListener('click', function () {
+				new GoAnalysis().terrEstAsync(board, 7, [], function (terr2) { gm.cw.drawTerritory(terr2); } );
+			});
 			gm.swindow.appendChild(terr_butt);
 		};
 	};
@@ -404,14 +406,16 @@ function CanvasWriter(board, canvas) {
 	// direct canvas interaction, creates a square
 	this.drawSquare_uns = function(x,y,r,fill_color, line_color) {
 		var context = this.canvas.getContext('2d');
-		var w= 1.414 * r;
+		var w= 1.3 * r;
 		context.beginPath();
 		context.rect(x-w, y-w, 2*w, 2*w);
 		context.fillStyle = fill_color;
 		if (fill_color != "none" ) { context.fill(); }
-		context.lineWidth = 1;
-		context.strokeStyle = line_color;
-		context.stroke();
+		if (line_color != "none") {
+			context.lineWidth = 1;
+			context.strokeStyle = line_color;
+			context.stroke();
+		}
 	};
 
 	// direct canvas interaction, creates a circle
@@ -545,13 +549,15 @@ function CanvasWriter(board, canvas) {
 	};
 
 	this.drawTerritory = function(terr_map) {
+		this.drawLines();
 		var radius = Math.abs(this.scaleX(1) - this.scaleX(0))/2.3;
 		var max_lev = Math.max.apply(null, terr_map.map(function (arr) { return Math.max.apply(null, arr); }));
 		var min_lev = Math.min.apply(null, terr_map.map(function (arr) { return Math.min.apply(null, arr); }));
 		for (var i = 0; i < this.board.size; i++) {
 			for (var j = 0; j < this.board.size; j++) {
 				var intense = Math.floor(255*(terr_map[i][j] - min_lev)/(max_lev-min_lev));
-				var intense_str = "rgb(" + intense + "," + intense + "," + intense + ")";
+				var op = Math.abs(terr_map[i][j]) / Math.max(Math.abs(max_lev),Math.abs(min_lev));
+				var intense_str = "rgba(" + intense + "," + intense + "," + intense + "," + op + ")";
 				this.drawSquare_uns(this.scaleX(i),this.scaleY(j), radius, intense_str, "none");
 			}
 		}

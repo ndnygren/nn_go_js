@@ -669,11 +669,26 @@ function GoAnalysis () {
 	this.getTerritoryEstimate = function(board) {
 		var limit = 5;
 		var attempts = [];
-		var output = [];
 		for (var i = 0; i < limit; i++) {
 			attempts.push(this.randomFinish(board));
 		}
+		return this.aggregateBoards(attempts);
+	};
 
+	this.terrEstAsync = function(board, limit, attempts, callback) {
+		var self = this;
+		if (limit > 0) {
+			var next = this.randomFinish(board);
+			var arr = attempts.slice(0);
+			arr.push(next);
+			callback(self.aggregateBoards(arr));
+			setTimeout(function() { self.terrEstAsync(board, limit-1, arr, callback); }, 100);
+		}
+	};
+
+	this.aggregateBoards = function(attempts) {
+		var board = attempts[0];
+		var output = [];
 		for (i = 0; i < board.size; i++) {
 			output.push([]);
 			for (var j = 0; j < board.size; j++){
