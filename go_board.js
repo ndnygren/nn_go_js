@@ -612,7 +612,10 @@ function GoAnalysis () {
 
 		for (var i = 0; i < libs.length; i++) {
 			if (libs[i].libs.length == 1) {
-				if (board.moveValid(libs[i].libs[0][0], libs[i].libs[0][1])){
+				var x = libs[i].libs[0][0];
+				var y = libs[i].libs[0][1];
+				var count = board.seq.slice(board.seq.length - 10).filter(function (q) { return q[0]==x && q[1]==y; });
+				if (board.moveValid(x, y) && count.length < 2){
 					//console.log("ending it " + JSON.stringify(libs[i].libs[0]));
 					return libs[i].libs[0];
 				}
