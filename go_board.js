@@ -682,6 +682,16 @@ function GoAnalysis () {
 			var nw = board.neigh(x,y).filter(function (x) { return x[2] == 1; } );
 			if (nb.length > nw.length) {return 2; }
 			if (nb.length < nw.length) {return 1; }
+			/*
+			var grp = board.getGroup(x,y);
+			var neigh = grp.map(function(q) { return board.nonemptyNeigh(q[0],q[1]); })[0];
+
+			var nb2 = neigh.filter(function (q) { return q[2] == 2; } );
+			var nw2 = neigh.filter(function (q) { return q[2] == 1; } );
+
+			if (nb2.length > nw2.length) {return 2; }
+			if (nw2.length > nb2.length) {return 1; }
+			*/
 			else { return 0; }
 		}
 	};
