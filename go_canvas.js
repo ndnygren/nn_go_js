@@ -555,7 +555,8 @@ function CanvasWriter(board, canvas) {
 		var min_lev = Math.min.apply(null, terr_map.map(function (arr) { return Math.min.apply(null, arr); }));
 		for (var i = 0; i < this.board.size; i++) {
 			for (var j = 0; j < this.board.size; j++) {
-				var intense = Math.floor(255*(terr_map[i][j] - min_lev)/(max_lev-min_lev));
+				var intense =  0; //Math.floor(255*(terr_map[i][j] - min_lev)/(max_lev-min_lev));
+				intense = Math.abs(min_lev- terr_map[i][j]) > Math.abs(max_lev- terr_map[i][j]) ? 255 : 0;
 				var op = Math.abs(terr_map[i][j]) / Math.max(Math.abs(max_lev),Math.abs(min_lev));
 				var intense_str = "rgba(" + intense + "," + intense + "," + intense + "," + op + ")";
 				this.drawSquare_uns(this.scaleX(i),this.scaleY(j), radius, intense_str, "none");
@@ -588,8 +589,12 @@ function HistoryManager(hwindow, game_id) {
 		var canvas = document.createElement("canvas");
 		var bl = golib.elemWithText("button", "", "< Back");
 		var br = golib.elemWithText("button", "", "Forward >");
+		var terr_butt = golib.elemWithText("button", "", "Estimate Territory");
 		bl.addEventListener('click', function() { hm.decMove(); });
 		br.addEventListener('click', function() { hm.incMove(); });
+		terr_butt.addEventListener('click', function () {
+				new GoAnalysis().terrEstAsync(boardCache.getBoard(hm.obj.size, hm.obj.seq.slice(0,hm.move)), 21, [], function (terr2) { hm.cw.drawTerritory(terr2); } );
+		});
 		ldiv.className = "inner_div";
 		rdiv.className = "inner_div";
 		canvas.width = 400;
@@ -601,6 +606,7 @@ function HistoryManager(hwindow, game_id) {
 		rdiv.appendChild(bl);
 		rdiv.appendChild(br);
 		rdiv.appendChild(this.tablediv);
+		rdiv.appendChild(terr_butt);
 		this.hwindow.appendChild(ldiv);
 		this.hwindow.appendChild(rdiv);
 		this.cw = new CanvasWriter(board, canvas);

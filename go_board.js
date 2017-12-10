@@ -590,13 +590,14 @@ function GoBoard(size) {
 
 function GoAnalysis () {
 	this.validAndGood = function(board, x,y){
+		var color = ((board.seq.length+1) % 2) + 1;
+		var mn = board.matchNeigh(x,y, color);
+		var n = board.neigh(x,y);
+		if (n.length == mn.length){
+				return false;
+		}
 		if (board.moveValid(x, y)){
-			var color = ((board.seq.length+1) % 2) + 1;
-			var mn = board.matchNeigh(x,y, color);
-			var n = board.neigh(x,y);
-			if (n.length > mn.length){
-				return true;
-			}
+			return true;
 		}
 		return false;
 	};
@@ -606,6 +607,7 @@ function GoAnalysis () {
 		var limit = 10;
 
 		//The following section captures groups with only 1 liberty, in a very not-random way
+
 		var libs = board.comb_map();
 
 		for (var i = 0; i < libs.length; i++) {
@@ -654,6 +656,18 @@ function GoAnalysis () {
 				return board2;
 			}
 		}
+
+		var libs = board2.comb_map().filter(function (q) { return q.libs.length == 1; } ).map(function (q) { return q.grp; });
+		var grps = board2.group_map();
+		//console.log(JSON.stringify(libs) + "\n\ngroups: " + JSON.stringify(grps));
+		for (i = 0; i < board2.size; i++) {
+			for (var j = 0; j < board2.size; j++) {
+				if (libs.indexOf(grps[i][j]) >= 0) {
+					board2.data[i][j] = 0;
+				}
+			}
+		}
+
 		return board2;
 	};
 
@@ -661,8 +675,11 @@ function GoAnalysis () {
 		if (board.get(x,y) > 0) {
 			return board.get(x,y);
 		} else {
-			var n = board.neigh(x,y);
-			return n[0][2];
+			var nb = board.neigh(x,y).filter(function (x) { return x[2] == 2; } );
+			var nw = board.neigh(x,y).filter(function (x) { return x[2] == 1; } );
+			if (nb.length > nw.length) {return 2; }
+			if (nb.length < nw.length) {return 1; }
+			else { return 0; }
 		}
 	};
 
@@ -689,12 +706,14 @@ function GoAnalysis () {
 	this.aggregateBoards = function(attempts) {
 		var board = attempts[0];
 		var output = [];
+		var color;
 		for (i = 0; i < board.size; i++) {
 			output.push([]);
 			for (var j = 0; j < board.size; j++){
 				output[i].push(0);
 				for (var k = 0; k < attempts.length; k++) {
-					output[i][j] += (this.getColor(attempts[k],i,j) == 2 ? -1 : 1);
+					color = this.getColor(attempts[k],i,j);
+					output[i][j] += (color == 2 ? -1 : color);
 				}
 			}
 		}
